@@ -26,7 +26,7 @@
 
 console = true -- true/false: display debug messages in the console
 
------------------------------------------------------- END OFUSER CONFIG AREA
+----------------------------------------------------- END OF USER CONFIG AREA
 
 
 -- Display a message in the console for debugging
@@ -40,9 +40,14 @@ end
 -- Main function
 function main()
 
-	
+	-- Here: your code.
 
 end
+
+
+-- INIT ---------------------------------------------------------------------
+
+-- Here: your conditions to avoid triggering main without reason.
 
 reaper.PreventUIRefresh(1)
 

@@ -16,7 +16,7 @@ Put the file in an easy to find folder, for example, according to what object yo
 
 ## Conventions
 
- - Use local variables
+ - Use local variables in your utilities functions
  - Put an exemple of use of your functions below it's description
  - Comment
  - Functions parameters should be self-explanatory (it they are not, please add descriptions of what kind of value is needed for each parameters)

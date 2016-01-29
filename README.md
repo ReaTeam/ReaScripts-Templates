@@ -21,3 +21,4 @@ Put the file in an easy to find folder, for example, according to what object yo
  - Comment
  - Functions parameters should be self-explanatory (it they are not, please add descriptions of what kind of value is needed for each parameters)
  - On top of a function, say what kind of value it returns
+ - Only original creator of a file is allowed to rename it (he could have embed it somewhere)

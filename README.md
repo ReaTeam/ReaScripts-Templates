@@ -1,5 +1,5 @@
 # ReaScript-Templates
-Templates, models, boilerplates, examples and snippets for REAPER ReaScript, for easier scripts creations.
+Templates, models, boilerplates, examples and snippets for [REAPER](http://www.reaper.fm) ReaScript, for easier scripts creations.
 
 # Contribute
 

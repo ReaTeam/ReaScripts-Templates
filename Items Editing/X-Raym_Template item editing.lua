@@ -1,0 +1,84 @@
+--[[
+ * ReaScript Name: 
+ * Description: 
+ * Instructions: Run
+ * Author: 
+ * Author URI: 
+ * Repository: 
+ * Repository URI: 
+ * File URI: 
+ * Licence: GPL v3
+ * Forum Thread: 
+ * Forum Thread URI: 
+ * REAPER: 5.0
+ * Extensions: None
+ * Version: 1.0
+--]]
+ 
+--[[
+ * Changelog:
+ * v1.0 (2016-01-29)
+	+ Initial Release
+--]]
+
+
+-- USER CONFIG AREA -----------------------------------------------------------
+
+console = true -- true/false: display debug messages in the console
+
+------------------------------------------------------- END OF USER CONFIG AREA
+
+
+-- UTILITIES -------------------------------------------------------------
+
+-- Save item selection
+function SaveSelectedItems (table)
+	for i = 0, reaper.CountSelectedMediaItems(0)-1 do
+		table[i+1] = reaper.GetSelectedMediaItem(0, i)
+	end
+end
+
+
+-- Display a message in the console for debugging
+function Msg(value)
+	if console then
+		reaper.ShowConsoleMsg(tostring(value) .. "\n")
+	end
+end
+
+--------------------------------------------------------- END OF UTILITIES
+
+
+-- Main function
+function main()
+
+	for i, item in ipairs(init_sel_items) do
+		reaper.SetMediaItemInfo_Value(item, "D_POSITION", value_set)
+	end
+
+end
+
+
+-- INIT
+
+-- See if there is items selected
+count_sel_items = reaper.CountSelectedMediaItems(0)
+
+if count_sel_items > 0 then
+
+	reaper.PreventUIRefresh(1)
+
+	reaper.Undo_BeginBlock() -- Begining of the undo block. Leave it at the top of your main function.
+	
+	init_sel_items =  {}
+	SaveSelectedItems(init_sel_items)
+
+	main()
+
+	reaper.Undo_EndBlock("My action", -1) -- End of the undo block. Leave it at the bottom of your main function.
+
+	reaper.UpdateArrange()
+
+	reaper.PreventUIRefresh(-1)
+	
+end

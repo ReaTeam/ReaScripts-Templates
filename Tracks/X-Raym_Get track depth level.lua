@@ -1,4 +1,4 @@
-function GetTrackFolderLevel(track)
+function GetTrackFolderLevel(track) -- This is what reaper.GetTrackDepth already do !!!!!!!!
   local idx = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")
   local level = 0
   if idx > 1 then -- if not the first track (first track will always be 0)

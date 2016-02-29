@@ -1,3 +1,7 @@
+-- This is an experimentation.
+-- Problem is item and take GUID that need to be modified.
+-- Not that handy as tehre is no "set take GUID" or "SetTakeXML" function
+
 -- Create a Text Item.
 -- Return the item if success. Else, return nil.
 function CopyMediaItem(item, track, position)

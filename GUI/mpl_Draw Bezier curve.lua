@@ -4,7 +4,8 @@
   -----------------------------------
   -----------------------------------  
   
-  function draw_curve(order, xy_t)
+  function draw_curve(x_table, y_table)
+    order = #x_table
     ----------------------------
     function fact(n) if n == 0 then return 1 else return n * fact(n-1) end end
     ----------------------------
@@ -20,35 +21,22 @@
       return B
     end  
     ----------------------------
-    function gen_points(xy_t)
-      local x = {}
-      local y = {}
-      for i = 0, #xy_t/2 - 1 do
-        x[i+1] = xy_t[i*2+1]
-        y[i+1] = xy_t[i*2+2]
-      end 
-      return x,y
-    end 
-    ----------------------------
-    function draw_points(xy_t)
-      local x,y = gen_points(xy_t)
+    function draw_points(x,y)
       local point_side = 5
       gfx.set(0,0.8,0,0.4)
-      for i = 1, #xy_t/2 -1 do
+      for i = 1, #x do
         gfx.rect(x[i] -point_side/2 ,y[i] -point_side/2,point_side,point_side,1, 1)
       end
     end
     ----------------------------
-    x,y = gen_points(xy_t)
-    draw_points(xy_t)
+    draw_points(x_table, y_table)
     for t = 0, 1, 0.001 do
-      x_point = bezier_eq(order, x, t)+ t^order*x[order]
-      y_point = bezier_eq(order, y, t)+ t^order*y[order]      
-      -- draw point 
-        gfx.x = x_point
-        gfx.y = y_point
-        gfx.a = 0.05
-        gfx.setpixel(1,1,1)
+      x_point = bezier_eq(order, x_table, t)+ t^order*x_table[order]
+      y_point = bezier_eq(order, y_table, t)+ t^order*y_table[order] 
+      gfx.x = x_point
+      gfx.y = y_point
+      gfx.a = 0.05
+      gfx.setpixel(1,1,1)
     end    
   end
 
@@ -56,25 +44,20 @@
   -----------------------------------
   -----------------------------------
     
-  local xy_table =
+  local x_table =
                  {10,  -- x1
-                  10, -- y1, 
-                  
-                  30,   -- x2, 
-                  180,  -- y2
-                  
-                  100, -- x3
-                  10,  -- y3
-                  
-                  150,  -- x4
-                  180,  -- y4
-                  
-                  210,  --x5
-                  10,  --y5
-                  
-                  250,  --x6
-                  180    --x6
+                  70,  -- x2
+                  100,  -- x3
+                  80,  -- x4
+                  180,  -- x5
                   }
+  local y_table =
+                 {10,  -- x1
+                  50,  -- x2
+                  100,  -- x3
+                  150,  -- x4
+                  120,  -- x5
+                  }                  
                    
   gfx.init('Draw Bézier curve by mpl',300, 300)                
-  draw_curve(#xy_table/2, xy_table)
+  draw_curve(x_table, y_table)

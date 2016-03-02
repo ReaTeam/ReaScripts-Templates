@@ -49,6 +49,7 @@ function main()
 		local track = reaper.GetSelectedTrack(0, i) -- Get selected track i
 		
 		reaper.SetMediaTrackInfo_Value(track, "I_HEIGHTOVERRIDE", 0)
+		local retval, track_name = reaper.GetSetMediaTrackInfo_String(track, "P_NAME", "new track name", true)
 
 	end -- ENDLOOP through selected tracks
 

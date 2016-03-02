@@ -52,12 +52,12 @@
                   180,  -- x5
                   }
   local y_table =
-                 {10,  -- x1
-                  50,  -- x2
-                  100,  -- x3
-                  150,  -- x4
-                  120,  -- x5
-                  }                  
+                 {10,  -- y1
+                  50,  -- y2
+                  100,  -- y3
+                  150,  -- y4
+                  120,  -- y5
+                  }                 
                    
   gfx.init('Draw Bézier curve by mpl',300, 300)                
   draw_curve(x_table, y_table)

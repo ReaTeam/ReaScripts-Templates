@@ -23,9 +23,9 @@
     function gen_points(xy_t)
       local x = {}
       local y = {}
-      for i = 1, #xy_t/2 do
-        x[i] = xy_t[i*2+1]
-        y[i] = xy_t[i*2+2]
+      for i = 0, #xy_t/2 - 1 do
+        x[i+1] = xy_t[i*2+1]
+        y[i+1] = xy_t[i*2+2]
       end 
       return x,y
     end 
@@ -47,7 +47,7 @@
       -- draw point 
         gfx.x = x_point
         gfx.y = y_point
-        gfx.a = 0.2 
+        gfx.a = 0.05
         gfx.setpixel(1,1,1)
     end    
   end
@@ -57,24 +57,24 @@
   -----------------------------------
     
   local xy_table =
-                 {20,  -- x1
-                  150, -- y1, 
+                 {10,  -- x1
+                  10, -- y1, 
                   
-                  50,   -- x2, 
-                  100,  -- y2
+                  30,   -- x2, 
+                  180,  -- y2
                   
                   100, -- x3
-                  60,  -- y3
+                  10,  -- y3
                   
                   150,  -- x4
-                  150,  -- y4
+                  180,  -- y4
                   
                   210,  --x5
-                  180,  --y5
+                  10,  --y5
                   
                   250,  --x6
-                  10    --x6
+                  180    --x6
                   }
                    
   gfx.init('Draw Bézier curve by mpl',300, 300)                
-  draw_curve(#xy_table/2 - 1, xy_table)
+  draw_curve(#xy_table/2, xy_table)

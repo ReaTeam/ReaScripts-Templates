@@ -1,0 +1,86 @@
+font_size = 16;
+font_name = "Verdana";
+
+buffer = 10000;
+
+function get_samples_at_cursor(take)
+(
+  //take_pcm_source = GetMediaItemTake_Source(take);
+  //GetMediaSourceType(take_pcm_source, #typebuf);
+  //sample_rate = GetMediaSourceSampleRate(take_pcm_source);
+  //num_channels = GetMediaSourceNumChannels(take_pcm_source);
+	offs = GetCursorPosition()/**take_playrate*/ - item_pos;
+  samples_per_channel = 16;
+  
+
+  take != last_take ? (
+    take_pcm_source = GetMediaItemTake_Source(take);
+		//take_playrate = GetMediaItemTakeInfo_Value(take, "D_PLAYRATE");
+    //GetMediaSourceType(take_pcm_source, #typebuf);
+    sample_rate = GetMediaSourceSampleRate(take_pcm_source);
+    num_channels = GetMediaSourceNumChannels(take_pcm_source);
+		
+    last_accessor > 0 ? DestroyAudioAccessor(last_accessor);
+    last_accessor = CreateTakeAudioAccessor(take);
+    last_offs = -100000000.0;
+    last_take = take;
+  );
+
+  AudioAccessorValidateState(last_accessor) || offs != last_offs ? (
+    memset(buffer, 0, samples_per_channel*num_channels);
+    nsret = last_accessor > 0 ? (GetAudioAccessorSamples(last_accessor,sample_rate,num_channels,offs,samples_per_channel,buffer) > 0 ? samples_per_channel : 0) : 0;
+    i = 0;
+    nsret > 0 ? (
+      chan_1 = 20 * log10(abs(buffer[0]));
+      num_channels == 2 ? chan_2 = 20 * log10(abs(buffer[1]));
+    );
+    last_offs=offs;
+  );
+);
+
+function get_take()
+(
+  (item = GetSelectedMediaItem(0, 0)) ? (
+    item_pos = GetMediaItemInfo_Value(item, "D_POSITION");
+    (take = GetActiveTake(item)) ? (
+      get_samples_at_cursor(take);
+    );
+  );
+);
+
+function init(window_w, window_h)
+(
+  //gfx_a = 1; gfx_r = 1; gfx_g = 1; gfx_b = 1;
+  gfx_init("dB display", window_w, window_h);
+  gfx_setfont(1, font_name, font_size);
+);
+
+function run() local()
+(
+  gfx_a = 0.5; gfx_r = 1; gfx_g = 1; gfx_b = 1;
+  gfx_x = 10;
+  gfx_y = 10;
+
+  get_take();
+  
+  gfx_a = 0.5;
+  gfx_printf("chan 1 ");
+  gfx_a = 1;
+  gfx_printf("%f", chan_1);
+  
+  num_channels == 2 ? (
+    gfx_a = 0.5;
+    gfx_x = 10;
+    gfx_y += gfx_texth;
+    gfx_printf("chan 2 ");
+    gfx_a = 1;
+    gfx_printf("%f", chan_2);
+  );
+  
+  gfx_update();
+  gfx_getchar() >= 0 ? defer("run();");
+);
+
+// init(window_w, window_h);
+init(220, 120);
+run();

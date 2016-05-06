@@ -11,8 +11,8 @@ end
 
 function GetCurrentMeasureLength() -- from edit cursor or play position
 	local cursor_pos = GetPlayOrEditCursorPos()
-	local etval, measures, cml, fullbeats, cdenom = reaper.TimeMap2_timeToBeats(0, cursor_pos)
+	local retval, measures, cml, fullbeats, cdenom = reaper.TimeMap2_timeToBeats(0, cursor_pos)
 	local current_measure = reaper.TimeMap2_beatsToTime(0, retval, measures)
-	local next_beat = reaper.TimeMap2_beatsToTime(0, retval + 1, measures + look_ahead_measures)
+	local next_beat = reaper.TimeMap2_beatsToTime(0, retval + 1, measures + 1)
 	return next_measure - current_measure
 end

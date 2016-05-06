@@ -7,11 +7,11 @@ function CreateTextItem(track, position, length, text, color)
 	reaper.SetMediaItemInfo_Value(item, "D_POSITION", position)
 	reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
   
-	if text ~= nil then
+	if text then
 		reaper.ULT_SetMediaItemNote(item, text)
 	end
   
-	if color ~= nil then
+	if color then
 		reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", color)
 	end
   

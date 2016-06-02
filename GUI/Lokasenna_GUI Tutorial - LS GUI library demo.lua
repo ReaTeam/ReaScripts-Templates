@@ -20,7 +20,7 @@ NOTE: This file is just a proof-of-concept demo, meant to accompany the
 -- Grab everything from our GUI library
 local info = debug.getinfo(1,'S');
 script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
-GUI = dofile(script_path .. "LS GUI.lua")
+GUI = dofile(script_path .. "Lokasenna_GUI Tutorial - LS GUI library demo.lua")
 
 
 	All of the functions in this file can then be called like so:

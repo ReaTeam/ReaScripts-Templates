@@ -10,5 +10,5 @@ end
 
 Msg("\nREAPER Functions")
 for k, v in pairs(reaper) do
-  reaper.ShowConsoleMsg( k .. " = " .. tostring(v) .. "\n")
+  --reaper.ShowConsoleMsg( k .. " = " .. tostring(v) .. "\n")
 end

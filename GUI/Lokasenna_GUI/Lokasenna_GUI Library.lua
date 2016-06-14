@@ -1,63 +1,68 @@
 --[=[
-	GUI Library
+	Lokasenna_GUI Library
 	by Lokasenna
 
-	Provides functions and classes for adding a GUI to another LUA script.
-
-
-	Scripts using this should include the following block at the top of the file:
+	Provides functions and classes for adding a GUI to a LUA script with minimal effort
 	
-----------------------------------------------------------------	
+	To use:
+
+	1. 	Copy/paste the code below into the beginning of your script.
+
+	2. 	To create the window:
 	
--- Grab everything from our GUI library
-local info = debug.getinfo(1,'S');
-script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
-GUI = loadfile(script_path .. "Lokasenna_GUI Library beta 1.lua")
+		GUI.name = "My window's title"
+		GUI.x, GUI.y = __, __
+		GUI.w, GUI.h = __, __
+		GUI.anchor, GUI.corner = __, __
+		
 
-if not GUI then
-	reaper.ShowMessageBox( "This script requires Lokasenna's GUI library to run.\nPlease make sure 'Lokasenna_GUI Library beta 1.lua' is in the same folder.", "Library not found", 0)
-	return 0
-else
-	GUI = GUI()
-end
-
-----------------------------------------------------------------
-
-
-	All of the functions in this file can then be called like so:
-	
-	local newcolor = GUI.rgb2num(255, 192, 128)
-					 ^^^^
-
-	
-	
-	To create the GUI elements, create a table in your script called GUI.elms
-	and populate it like so
-	
-GUI.elms = {
-
-	item1 = type:New(parameters),
-	item2 = type:New(parameters),
-	item3 = type:New(parameters),
-	...etc...
-
-}
-
-	See the :New method for each element below for a listing of its parameters
+		x,y		offset coordinates from the anchor position
+		w,h		window dimensions
+		anchor	"screen" or "mouse"
+		corner	"TL"
+				"T"
+				"TR"
+				"R"
+				"BR"
+				"B"
+				"BL"
+				"L"
+				"C"
+		
+		If no anchor and corner are specified, it will default to the top-left corner of the screen.
 	
 	
-	Additional documentation:
+	3.	To add GUI elements, declare a table called GUI.elms and populate it like so:
+	
+		GUI.elms = {
+
+			item1 = type:New(parameters),
+			item2 = type:New(parameters),
+			item3 = type:New(parameters),
+			...etc...
+
+		}
+
+		(Don't forget those commas at the end)
+		
+		See the :New method for each element below for a list of parameters
+	
+	
+	4. Additional documentation:
 		
 		Lokasenna_GUI script example.lua		A working example of the various GUI elements
 		Lokasenna_GUI example functions.lua		Common things you might want the GUI to do for you
 ]=]--
 
+----------------------------------------------------------------
+------------------Copy everything from here---------------------
+----------------------------------------------------------------
 
+local function GUI_table ()
 
--- Create a master table to store all of our functions
--- After each function we'll read it into the table with:
---	GUI.xxx = xxx
 local GUI = {}
+
+GUI.version = "beta 2"
 
 
 	---- Keyboard constants ----
@@ -427,6 +432,7 @@ end
 
 GUI.Init = function ()
 	
+	
 	-- Create the window
 	gfx.clear = GUI.rgb2num(table.unpack(GUI.colors.wnd_bg))
 	
@@ -510,7 +516,9 @@ GUI.Main = function ()
 	-- Redraw each element
 	for key, elm in pairs(GUI.elms) do
 		elm:draw()
-	end		
+	end	
+	
+	GUI.Draw_Version()
 	
 	gfx.update()
 	
@@ -596,6 +604,24 @@ GUI.Val = function (elm, newval)
 		return GUI.elms[elm]:val()
 	end
 
+end
+
+
+-- Display the version number
+GUI.Draw_Version = function ()
+	
+	local str = "Running Lokasenna_GUI "..GUI.version
+	
+	gfx.setfont(1, "Arial", 12, 105)
+	GUI.color("txt")
+	
+	local str_w, str_h = gfx.measurestr(str)
+	
+	gfx.x = GUI.w - str_w
+	gfx.y = GUI.h - str_h
+	
+	gfx.drawstr(str)	
+	
 end
 
 
@@ -2241,3 +2267,10 @@ GUI.Menubox = Menubox
 
 -- Make our table full of functions available to the parent script
 return GUI
+
+end
+GUI = GUI_table()
+
+----------------------------------------------------------------
+----------------------------To here-----------------------------
+----------------------------------------------------------------

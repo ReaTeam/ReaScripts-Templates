@@ -11,9 +11,17 @@ function Open_URL(url)
   end
 end
 
-if reaper.BR_SetMediaTrackLayouts then
-  local retval = reaper.ShowMessageBox("SWS extension is required by this script.\nHowever, it doesn't seem to be present for this REAPER installation.\n\nDo you want to download it now ?", "Warning", 1)
-  if retval == 1 then
-    Open_URL("http://www.sws-extension.org/download/pre-release/")
+function CheckSWS()
+  local SWS_not_installed
+  if not reaper.BR_SetMediaTrackLayouts then
+    local retval = reaper.ShowMessageBox("SWS extension is required by this script.\nHowever, it doesn't seem to be present for this REAPER installation.\n\nDo you want to download it now ?", "Warning", 1)
+    if retval == 1 then
+      Open_URL("http://www.sws-extension.org/download/pre-release/")
+    end
+  else
+    SWS_not_installed = true
   end
+  return SWS_not_installed
 end
+
+if not CheckSWS() then return end -- Abord the script loading.

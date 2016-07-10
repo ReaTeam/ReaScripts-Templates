@@ -1,6 +1,3 @@
-function CheckSWS()
-end
-
 function Open_URL(url)
   if not OS then local OS = reaper.GetOS() end
   if OS=="OSX32" or OS=="OSX64" then

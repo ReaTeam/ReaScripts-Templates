@@ -1,7 +1,7 @@
 function Open_URL(url)
   if not OS then local OS = reaper.GetOS() end
   if OS=="OSX32" or OS=="OSX64" then
-    os.execute("open ".. url)
+    os.execute("start \"\" \"".. url .. "\"")
    else
     os.execute("start ".. url)
   end

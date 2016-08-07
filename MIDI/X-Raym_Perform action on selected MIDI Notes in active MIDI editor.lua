@@ -23,12 +23,13 @@ function Main( take )
 	-- GET SELECTED NOTES (from 0 index)
 	for k = 0, notes - 1 do
 	  		
-		local retval, sel, muted, startppqposOut, endppqposOut, chan, pitch, vel = reaper.MIDI_GetNote( take, k )
+		local retval, sel, muted, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote( take, k )
 		
 		if sel then
 		
-		  	-- ACTION HERE
-		  
+			-- ACTION HERE
+			reaper.MIDI_SetNote( take, k, sel, muted, startppq, endppq, chan, pitch, vel )
+		
 		end
 	  	
 	end

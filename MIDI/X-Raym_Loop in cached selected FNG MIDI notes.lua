@@ -6,6 +6,7 @@
  * REAPER: 5.0 pre 15
  * Extensions: None
  * Version: 1.0
+ * Extension: SWS 2.8.7
 --]]
  
 --[[

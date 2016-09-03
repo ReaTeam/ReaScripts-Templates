@@ -1,0 +1,70 @@
+/**
+ * JSFX Name: 
+ * Description: 
+ * Screenshot:
+ * Author: 
+ * Author URI: 
+ * Links:
+     Forum Thread
+ * Donation: 
+ * Licence: GPL v3
+ * REAPER: 5.0
+ * Extensions: None
+ * Version: 1.0
+ */
+
+/**
+ * Changelog:
+ * v1.0 (2016-09-03)
+  + Initial Release
+ */
+
+desc:Note to CC
+
+slider1:0<0,16,1{Any,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}>Input Channel
+
+////////////////////////////////////////////////////////////////////////////////
+@init
+statNoteOn = $x90;
+statNoteOff = $x80;
+
+
+////////////////////////////////////////////////////////////////////////////////
+@slider
+inChannel = slider1 - 1;
+
+////////////////////////////////////////////////////////////////////////////////
+@block
+
+while
+(
+
+  midirecv(offset,msg1,note,vel) ?
+  (
+
+    // Extract message type and channel
+    status = msg1 & $xF0;
+    channel = msg1 & $x0F;
+
+    // Is it on our channel?
+    channel == inChannel || inChannel == -1 ?
+    (
+      
+      // Is it a note event?
+      status == statNoteOn || status == statNoteOff ?
+      (
+              
+        note= 0;
+        vel= 0;
+
+      );
+
+    ); 
+    
+    midisend(offset,msg1,note,vel);
+    
+    1; // Force loop to continue until all messages have been processed
+
+  );
+
+);

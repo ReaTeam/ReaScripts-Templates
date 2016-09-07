@@ -25,3 +25,7 @@ Put the file in an easy to find folder, for example, according to what object yo
   
 ## Cockos Forum Thread
 [ReaTeam Templates Repository - Use or share ReaScript templates and code snippets !](http://forum.cockos.com/showthread.php?t=172123)
+
+## Other Templates Libraries
+
+- [geraintluff/jsfx-ui-lib](https://github.com/geraintluff/jsfx-ui-lib)

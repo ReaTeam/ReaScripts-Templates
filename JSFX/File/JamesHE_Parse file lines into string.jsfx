@@ -1,0 +1,16 @@
+// Info here Q: Parse CSV file with JSFX 
+http://forum.cockos.com/showpost.php?p=1732827&postcount=11
+
+function file_to_numbered_strings(file,offset)local(handle)
+//offset= starting string number
+//returns number of lines read
+(
+  handle=file_open(file);
+  file_string(handle,offset);  
+  while( strlen(offset) && offset < 1023 )
+    ( offset+=1;
+      file_string(handle,offset);      
+    );
+  file_close(file);
+  offset;
+);

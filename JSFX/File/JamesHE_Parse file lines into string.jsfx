@@ -1,9 +1,18 @@
 // Info here Q: Parse CSV file with JSFX 
-http://forum.cockos.com/showpost.php?p=1732827&postcount=11
+//http://forum.cockos.com/showpost.php?p=1732827&postcount=11
+desc:.txt Files examples >  by James HE
+
+slider1:/text files:none:Text File 
+
+@init
+
+//FUNCTIONS for reading .txt files
+//offset = starting string number
+//returns number of lines read
 
 function file_to_numbered_strings(file,offset)local(handle)
-//offset= starting string number
-//returns number of lines read
+//this version can be used when you define the file via ~ filename:0,sometext.txt at the beginning of your code
+//use slider version if you want to pick from text files in a folder
 (
   handle=file_open(file);
   file_string(handle,offset);  
@@ -13,4 +22,61 @@ function file_to_numbered_strings(file,offset)local(handle)
     );
   file_close(file);
   offset;
+);  
+
+
+function slider_file_to_numbered_strings(slidernumber,offset)local(handle,lastvalue,lines)
+//USE ONLY THE NUMBER OF THE SLIDER FOR "slidernumber"  - do not use "sliderx"
+(
+
+  slider(slidernumber) != lastvalue ? reload=0;
+  
+  !reload ? (
+    handle=file_open(slider(slidernumber));
+    file_string(handle,offset);  
+    while( strlen(offset) && offset < 1023 )
+      ( offset+=1;
+        file_string(handle,offset);      
+      );
+    file_close(file);
+    lines=offset;
+    lastvalue=slider(slidernumber);
+    reload=1;
+  );
+  lines;
+); 
+  
+
+  
+@slider
+lines=slider_file_to_numbered_strings(1,offset);
+
+
+
+@gfx 650 450
+
+
+//some guidance
+gfx_setfont(1, Ariel,14);
+gfx_x=40; gfx_y=10;
+gfx_r=gfx_g=gfx_b=1;
+gfx_drawstr("Create a folder in your REAPER Data directory named \"text files\", then create or put some .txt files in the folder.
+The text within those files will be displayed below when selected by the slider");
+
+
+//display file
+gfx_setfont(2, Ariel,18);
+gfx_r=1;gfx_g=gfx_b=0;
+xx=30;
+yy=55;
+gfx_x=xx;gfx_y=yy;
+i=0;
+loop ( lines,
+  
+  gfx_drawstr(i);
+  gfx_x=xx;
+  gfx_y+=gfx_texth+3;
+  i+=1;
+  
 );
+  

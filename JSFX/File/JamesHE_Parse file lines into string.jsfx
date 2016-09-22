@@ -1,5 +1,6 @@
 // Info here Q: Parse CSV file with JSFX 
 //http://forum.cockos.com/showpost.php?p=1732827&postcount=11
+// Parsing exemple is for a file with %d-%d-%d line format
 desc:.txt Files examples >  by James HE
 
 slider1:/text files:none:Text File 
@@ -72,8 +73,9 @@ yy=55;
 gfx_x=xx;gfx_y=yy;
 i=0;
 loop ( lines,
-  
-  gfx_drawstr(i);
+  match("%d-%d-%d", i, v11a, v11b, v11c); // Parse line i
+  sprintf(str, "%d", v11a); // Convert to string for display in GFX
+  gfx_drawstr(str); // Draw line str
   gfx_x=xx;
   gfx_y+=gfx_texth+3;
   i+=1;

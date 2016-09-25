@@ -1,0 +1,24 @@
+// JS for plain text message
+// http://forum.cockos.com/showpost.php?p=1520989&postcount=5
+@gfx
+
+// Set position
+gfx_x = 10;
+gfx_y = 10;
+    
+// Set colour and transparency
+gfx_r = 0.0;
+gfx_g = 1.0;
+gfx_b = 0.0;
+gfx_a = 1.0;
+   
+// Draw text
+gfx_drawstr("Line1\n"); // ("\n" = new line)
+gfx_drawstr("Hello\n");
+gfx_drawstr("world!\n");
+gfx_drawstr("\n"); // empty line
+
+// Draw text using "gfx_printf"
+gfx_printf("Line5\n");
+gfx_printf("Line6\n");
+gfx_printf("Line7\n");

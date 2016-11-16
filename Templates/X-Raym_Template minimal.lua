@@ -3,7 +3,6 @@
  * Author: 
  * Licence: GPL v3
  * REAPER: 5.0
- * Extensions: None
  * Version: 1.0
 --]]
  

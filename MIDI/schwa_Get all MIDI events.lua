@@ -9,7 +9,7 @@ for t=1,tcnt do
     item=reaper.GetTrackMediaItem(tr,i-1)
     tk=reaper.GetActiveTake(item)
     if tk ~= nil then
-      ok,buf=reaper.MIDI_GetAllEvts(tk,"",false)
+      ok,buf=reaper.MIDI_GetAllEvts(tk,"")
       if ok and buf:len() > 0 then
         reaper.ShowConsoleMsg(string.format("\nTrack %d, item %d:\n", t, i))
         edit=false
@@ -31,13 +31,13 @@ for t=1,tcnt do
           if msg:byte(1)&0xF0 == 0x90 then
             -- convert all note-ons to velocity 96
             newmsg=string.pack("BBB",msg:byte(1),msg:byte(2),0x60)
-            repl=string.pack("IBs4",offs,sel,newmsg)
+            repl=string.pack("IBs4",offs,flag,newmsg)
             buf=buf:sub(1,pos-1)..repl..buf:sub(pos+adv)                          
             edit=true
           elseif msg:byte(1) == 0xFF and msg:byte(2) == 0x01 then
             -- convert all text events to "reaper"    
             newmsg=string.pack("BBc6",0xFF,0x01,"reaper") -- z instead of c6 would encode trailing NULL
-            repl=string.pack("IBs4",offs,sel,newmsg)
+            repl=string.pack("IBs4",offs,flag,newmsg)
             buf=buf:sub(1,pos-1)..repl..buf:sub(pos+adv)
             adv=adv+newmsg:len()-msg:len()
             edit=true
@@ -49,7 +49,7 @@ for t=1,tcnt do
         
         if edit == true then
           -- this will destructively change the MIDI source data!
-          reaper.MIDI_SetAllEvts(tk,buf,true)
+          reaper.MIDI_SetAllEvts(tk,buf)
           reaper.ShowConsoleMsg("edited!\n")          
         end            
       end

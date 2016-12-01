@@ -6,9 +6,10 @@ function Main()
   joystick_pov = reaper.joystick_getpov( joystick_device, 0 )
   
   joystick_x1_axis = reaper.joystick_getaxis( joystick_device, 0 )
-  joystick_y1_axis = reaper.joystick_getaxis( joystick_device, 1 )
-  joystick_x2_axis = reaper.joystick_getaxis( joystick_device, 2 )
+  joystick_x2_axis = reaper.joystick_getaxis( joystick_device, 1 )
+  joystick_y1_axis = reaper.joystick_getaxis( joystick_device, 2 )
   joystick_y2_axis = reaper.joystick_getaxis( joystick_device, 3 )
+  reaper.joystick_update( joystick_device )
   
   
   reaper.defer( Main )

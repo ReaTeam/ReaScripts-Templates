@@ -1,4 +1,6 @@
 -- Extracted from cfillion_Interactive ReaScript.lua
+-- Works best on macOS. It's slower on Windows where a cmd.exe window is
+-- briefly displayed, potentially messing with window focus in REAPER.
 
 --[[ USAGE
 copy("hello world");

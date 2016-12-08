@@ -27,7 +27,7 @@ function Main( take )
 		if sel then
 		
 			-- ACTION HERE
-      reaper.MIDI_SetCC( take, k, sel, muted, startppq, chanmsg, chan, msg2, val, false )
+			reaper.MIDI_SetCC( take, k, sel, muted, startppq, chanmsg, chan, msg2, val, false )
 		
 		end
 	  	

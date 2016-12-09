@@ -20,14 +20,14 @@ function Main( take )
 	retval, notes, ccs, sysex = reaper.MIDI_CountEvts( take )
 	
 	-- GET SELECTED NOTES (from 0 index)
-	for k = 0, ccs - 1 do
+	for id = 0, ccs - 1 do
 
-    local retval, sel, muted, startppq, chanmsg, chan, msg2, val = reaper.MIDI_GetCC( take, ccidx )
+		local retval, sel, muted, startppq, chanmsg, chan, msg2, val = reaper.MIDI_GetCC( take, id )
 		
 		if sel then
 		
 			-- ACTION HERE
-			reaper.MIDI_SetCC( take, k, sel, muted, startppq, chanmsg, chan, msg2, val, false )
+			reaper.MIDI_SetCC( take, id, sel, muted, startppq, chanmsg, chan, msg2, val, false )
 		
 		end
 	  	

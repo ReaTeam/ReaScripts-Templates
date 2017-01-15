@@ -1,3 +1,7 @@
+--[[
+	A demonstration of how to check for specific keypresses,
+	and/or when a key is being held down	
+]]--
 
 local name, x, y, w, h = "Keypress demo", 200, 200, 250, 100
 
@@ -5,7 +9,7 @@ local name, x, y, w, h = "Keypress demo", 200, 200, 250, 100
 local D = 100
 
 -- Declare our variables beforehand so that they aren't flushed when the script loops
-local char, char_D, down_time
+local char, char_D, down_time, held
 
 
 local function Main()
@@ -28,9 +32,23 @@ local function Main()
 		-- If yes, note the time
 		down_time = reaper.time_precise()
 
+	-- Was the key down before and now it isn't?
 	elseif char_D == 0 and down_time then
 	
-		-- Otherwise, make sure our time stamp is cleared
+		-- Don't treat it as a click if it was being held
+		if not held then
+			
+			-- Put your "on click" function here
+			gfx.x, gfx.y = 50, 75
+			gfx.drawstr("clicked!")
+		
+		end
+		
+		-- If you *do* want to send a click event when the button is let up
+		-- from being held, put your function here instead.
+		
+	
+		held = false	
 		down_time = nil
 		
 	end
@@ -53,6 +71,9 @@ local function Main()
 		if len > 1 then
 			gfx.x, gfx.y = 50, 75
 			gfx.drawstr("held")
+			
+			held = true
+			
 		end
 		
 	end

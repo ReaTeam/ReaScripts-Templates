@@ -211,25 +211,18 @@ local function Main()
 	if mouse_down then
 		last_mouse_down = true
 	elseif last_mouse_down then
-		
-		-- We clicked something!
-		mnu_clicked = (mouse_mnu - cur_depth + 1) % #mnu_arr
-		--if mnu_clicked < 0
 
+		mnu_clicked = (mouse_mnu - cur_depth + 1) % #mnu_arr
 		
 		if cur_depth == 0 then
 			cur_depth = mouse_mnu + 1
 		elseif mnu_clicked > 0 then
 		
-			-- User chose an option
-			Msg("clicked "..cur_depth..", "..mnu_clicked)
-			
 			-- This will tell our logic down below to quit
 			key_down = 0
 			
 		else
 
-			-- 
 			cur_depth = 0
 		end
 		

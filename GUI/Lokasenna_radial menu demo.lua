@@ -23,10 +23,44 @@ local ox, oy = w / 2, h / 2
 local pi = 3.1415927
 
 
-local mnu_arr = {"file", "edit", "view", "insert", "item", "track", "options", "actions", "ext'ns", "help"}
+local mnu_arr = {
+	[0] = {[0] = "file", "edit", "view", "insert", "item", "track", "options", "actions"},
+	{[0] = "file", "", "file\n1", "file\n2", "file\n3", "file\n4", "file\n5", ""},
+	{[0] = "edit", "", "edit\n1", "edit\n2", "edit\n3", "edit\n4", "edit\n5", ""},
+	{[0] = "view", "", "view\n1", "view\n2", "view\n3", "view\n4", "view\n5", ""},
+	{[0] = "insert", "", "insert\n1", "insert\n2", "insert\n3", "insert\n4", "insert\n5", ""},
+	{[0] = "item", "", "item\n1", "item\n2", "item\n3", "item\n4", "item\n5", ""},
+	{[0] = "track", "", "track\n1", "track\n2", "track\n3", "track\n4", "track\n5", ""},
+	{[0] = "options", "", "options\n1", "options\n2", "options\n3", "options\n4", "options\n5", ""},
+	{[0] = "actions", "", "actions\n1", "actions\n2", "actions\n3", "actions\n4", "actions\n5", ""},
+}
+
+mnu_arr = {[0] = {}}
+local len_a, len_b = 12, 10
+local function create_mnu_arr()
+	
+	for i = 1, len_a do
+		
+		mnu_arr[0][i - 1] = i
+		mnu_arr[i] = {[0] = i, ""}
+		for j = 2, len_b do
+	
+			mnu_arr[i][j] = i..", "..j
+			--Msg(mnu_arr[i][j])
+			
+		end
+		table.insert(mnu_arr[i], "")
+		
+	end
+	
+end
+create_mnu_arr()
+
 
 -- Get the width of each menu option in radians (not worrying about pi yet)
 local mnu_adj = 2 / #mnu_arr
+
+local cur_depth = 0
 
 
 local mouse_x, mouse_y, mouse_mnu, key_down
@@ -67,55 +101,65 @@ end
 
 -- Draw all of the menu options as segments of a ring
 local function draw_mnu()
-
-	for i = 0, (#mnu_arr - 1) do
-		
-		gfx.set(0.2, 1, 0.2, 1)
-
-		-- i * mnu_adj gives us the center of each option; use that get either side of the button
-		local angle_a, angle_b = (i - 0.45) * mnu_adj, (i + 0.45) * mnu_adj
-
-		local ax1, ay1 = polar2cart(angle_a, r_in, ox, oy)
-		local ax2, ay2 = polar2cart(angle_a, r_out, ox, oy)
-		local bx1, by1 = polar2cart(angle_b, r_in, ox, oy)
-		local bx2, by2 = polar2cart(angle_b, r_out, ox, oy)
-		gfx.line(ax1, ay1, ax2, ay2, 1)
-		gfx.line(bx1, by1, bx2, by2, 1)
-
-		-- I'm not sure why the + 0.5 is necessary, but it is
-		angle_a = (angle_a + 0.5) * pi
-		angle_b = (angle_b + 0.5) * pi
-		gfx.arc(ox, oy, r_in, angle_a, angle_b, 1)
-		gfx.arc(ox, oy, r_out, angle_a, angle_b, 1)
-		
 	
-		-- Change the background and text colors for the highlighted option
-		-- and turn it red if the mouse is clicked
-		if i == mouse_mnu then
+	for i = 0, #mnu_arr[cur_depth] do
+		
+		local str = mnu_arr[cur_depth][i]
+		
+		if str ~= "" then
+		
+			local k = math.max(cur_depth - 1, 0)
 			
-			if mouse_down then gfx.set(1, 0.2, 0.2, 1) end
+			gfx.set(0.2, 1, 0.2, 1)
+
+			-- i * mnu_adj gives us the center of each option; use that get either side of the button
+			local angle_a, angle_b = (i + k - 0.45) * mnu_adj, (i + k + 0.45) * mnu_adj
+
+			local ax1, ay1 = polar2cart(angle_a, r_in, ox, oy)
+			local ax2, ay2 = polar2cart(angle_a, r_out, ox, oy)
+			local bx1, by1 = polar2cart(angle_b, r_in, ox, oy)
+			local bx2, by2 = polar2cart(angle_b, r_out, ox, oy)
+			gfx.line(ax1, ay1, ax2, ay2, 1)
+			gfx.line(bx1, by1, bx2, by2, 1)
+
+			-- The arc functions don't use the correct reference angle,
+			-- so we have to add 0.5 rads to fix it
+			angle_a = (angle_a + 0.5) * pi
+			angle_b = (angle_b + 0.5) * pi
+			gfx.arc(ox, oy, r_in, angle_a, angle_b, 1)
+			gfx.arc(ox, oy, r_out, angle_a, angle_b, 1)
 			
-			for j = r_in, r_out, 0.3 do
-				gfx.arc(ox, oy, j, angle_a, angle_b, 1)
-				--gfx.arc(ox, oy, j, angle_a, angle_b, 0)
+		
+			-- Change the background and text colors for the highlighted option
+			-- and turn it red if the mouse is clicked
+			if (i + k) % (#mnu_arr) == mouse_mnu or (i + k == cur_depth - 1 and cur_depth > 0) then
+				
+				if mouse_down and (i + k) % (#mnu_arr) == mouse_mnu then gfx.set(1, 0.2, 0.2, 1) end
+				
+				for j = r_in, r_out, 0.3 do
+					gfx.arc(ox, oy, j, angle_a, angle_b, 1)
+					--gfx.arc(ox, oy, j, angle_a, angle_b, 0)
+				end
+				
+				if mouse_down then gfx.set(0.2, 1, 0.2, 1) end
+			
+				gfx.set(0, 0, 0, 1)
+			
+			else
+			
+				gfx.set(0.2, 1, 0.2, 1)
 			end
 			
-			if mouse_down then gfx.set(0.2, 1, 0.2, 1) end
-		
-			gfx.set(0, 0, 0, 1)
-		
-		else
-		
-			gfx.set(0.2, 1, 0.2, 1)
-		end
-		
 
-		-- Center the current option's text in the button
-		local str = mnu_arr[i + 1]
-		local str_w, str_h = gfx.measurestr(str)
-		local cx, cy = polar2cart(i * mnu_adj, r_in + (r_out - r_in) / 2, ox, oy)
-		gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
-		gfx.drawstr(str)
+			-- Center the current option's text in the button
+			local str = mnu_arr[cur_depth][i]
+
+			local str_w, str_h = gfx.measurestr(str)
+			local cx, cy = polar2cart((i + k) * mnu_adj, r_in + (r_out - r_in) / 2, ox, oy)
+			gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
+			gfx.drawstr(str)
+
+		end
 
 	end	
 end
@@ -158,9 +202,39 @@ local function Main()
 	local mouse_angle, mouse_r = cart2polar(mouse_x, mouse_y, ox, oy)
 	
 	-- Figure out what option the mouse is over
+
+	if mouse_angle < 0 then mouse_angle = mouse_angle + 2 end	
 	mouse_mnu = math.floor(mouse_angle / mnu_adj + 0.5)
-	if mouse_mnu < 0 then mouse_mnu = mouse_mnu + #mnu_arr end
+	if mouse_mnu == (#mnu_arr[cur_depth] + 1) then mouse_mnu = 0 end
 	if mouse_r < 32 then mouse_mnu = -1 end
+	
+	if mouse_down then
+		last_mouse_down = true
+	elseif last_mouse_down then
+		
+		-- We clicked something!
+		mnu_clicked = (mouse_mnu - cur_depth + 1) % #mnu_arr
+		--if mnu_clicked < 0
+
+		
+		if cur_depth == 0 then
+			cur_depth = mouse_mnu + 1
+		elseif mnu_clicked > 0 then
+		
+			-- User chose an option
+			Msg("clicked "..cur_depth..", "..mnu_clicked)
+			
+			-- This will tell our logic down below to quit
+			key_down = 0
+			
+		else
+
+			-- 
+			cur_depth = 0
+		end
+		
+		last_mouse_down = false
+	end
 
 	-- Draw all of the options
 	draw_mnu()	

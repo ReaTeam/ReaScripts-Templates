@@ -35,26 +35,6 @@ local mnu_arr = {
 	{[0] = "actions", "", "actions\n1", "actions\n2", "actions\n3", "actions\n4", "actions\n5", ""},
 }
 
-mnu_arr = {[0] = {}}
-local len_a, len_b = 12, 10
-local function create_mnu_arr()
-	
-	for i = 1, len_a do
-		
-		mnu_arr[0][i - 1] = i
-		mnu_arr[i] = {[0] = i, ""}
-		for j = 2, len_b do
-	
-			mnu_arr[i][j] = i..", "..j
-			--Msg(mnu_arr[i][j])
-			
-		end
-		table.insert(mnu_arr[i], "")
-		
-	end
-	
-end
-create_mnu_arr()
 
 
 -- Get the width of each menu option in radians (not worrying about pi yet)
@@ -218,8 +198,10 @@ local function Main()
 			cur_depth = mouse_mnu + 1
 		elseif mnu_clicked > 0 then
 		
-			-- This will tell our logic down below to quit
-			key_down = 0
+			
+			-- *** Put your "option was clicked" function here ***
+			
+			cur_depth = 0
 			
 		else
 

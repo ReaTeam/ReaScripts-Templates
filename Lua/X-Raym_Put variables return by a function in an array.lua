@@ -7,6 +7,8 @@ function test()
 end
 
 output = table.pack( test() )
+-- alternative
+output = { test() }
 
 for i, v in ipairs (output) do
   print(v)

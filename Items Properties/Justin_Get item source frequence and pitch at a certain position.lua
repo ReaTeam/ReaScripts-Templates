@@ -37,3 +37,26 @@ if item then
   end
  end 
  
+
+-- X-Raym Mod
+-- same thing as a function for loops
+function GetSourceItemFrequencyAtPosition2( take, pos, nch, ns, buf )
+  local rv = reaper.GetMediaItemTake_Peaks(take,1000.0,pos,nch,ns,115,buf)
+  if rv & (1<<24) and (rv&0xfffff) > 0 then
+    local spl = buf[nch*ns*2 + 1]
+    return tonumber(string.format("%d",spl&0x7fff))
+   end 
+end
+
+item = reaper.GetSelectedMediaItem(0,0)
+if item then
+  take = reaper.GetActiveTake(item,0)
+  if take and not reaper.TakeisMIDI(take) then
+    pos = reaper.GetCursorPosition()
+    source = reaper.GetMediaItemTake_Source(take)
+    nch = reaper.GetMediaSourceNumChannels(source)
+    ns = 1
+    buf = reaper.new_array(ns*3*nch)
+    freq = GetSourceItemFrequencyAtPosition2( take, pos, nch, ns, buf )
+  end
+ end 

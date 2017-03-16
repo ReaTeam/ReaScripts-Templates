@@ -15,3 +15,10 @@ ok = reaper.TrackFX_SetNamedConfigParm(track,fx, "-FILE*", "") -- remove all sam
 
 -- Finally, when the script is finished updating the samples, it should call (this will trigger actually loading the samples from disk, adding an undo point, etc):
 reaper.TrackFX_SetNamedConfigParm(track,fx, "DONE","")
+
+
+--[[
+REAPER v5.40pre13
++ ReaVerb: support TrackFX_SetNamedConfigParm et al w/ ITEMx, DONE
++ Reasamplomatic: support TrackFX_SetNamedConfigParm with MODE, RSMODE
+--]]

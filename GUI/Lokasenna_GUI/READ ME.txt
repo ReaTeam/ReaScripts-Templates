@@ -1,0 +1,124 @@
+		
+	Lokasenna_GUI 1.0
+
+-------------------------
+	Change log:
+
+April 7/17
+- Fixed a few Slider bugs
+- Ctrl+dragging will now offer more precision for Sliders with more than
+  150 steps
+- Added Slider parameters: show_handles, show_values, output, cap_x, cap_y
+  (see Slider.lua's comments)
+- Added/fixed the horizontal (dir = "h") mode for Checklists and Radios.
+- 'Example - General demonstration.lua' now shows the use of 'output' 
+  parameters for the knob and one of the sliders
+- Added 'READ ME - Building classes.txt' for anyone who's interested
+- More comments here and there
+
+-------------------------
+
+This library is intended to provide an easy-to-use base for building a GUI 
+for Reaper scripts, since ReaScript doesn't offer any GUI tools on its own.
+
+All of the main logic is handled in Core.lua. It's technically the only included 
+file necessary to use Lokasenna_GUI - for instance, if you wanted to use 
+your own GUI elements rather than the ones I've put together. Don't worry,
+I won't be offended if you do.
+
+
+A basic GUI script would look like this...
+
+
+1. Load Core.lua and whatever class libraries you want to use. Feel free to use
+requires(), loadfile(), or whatever else you want.
+
+	loadfile("Core.lua")()
+	loadfile("Classes\\Label.lua")()
+
+Everything is stored in a table called 'GUI'.
+
+
+2. Give the window a name, position, and dimensions.
+
+	GUI.name = "My script's window"
+	GUI.x, GUI.y = 0, 0
+	GUI.w, GUI.h = 256, 96
+	
+If you'd like, you can also specify GUI.anchor and GUI.corner to have the
+window open in a location relative to either the screen or the mouse. The most
+obvious use for this would be to have the window centered on the mouse cursor:
+
+	GUI.anchor, GUI.corner = "mouse", "C"
+	
+	(For more detail, see the comments for GUI.get_window_pos() in Core.lua)
+	
+In this case, GUI.x and GUI.y will be used as offset values.
+
+
+3. Create all of your GUI elements.
+
+	GUI.New(name,	class,	z,	x,	y, ...class-specific parameters... )
+
+	name		Any string that would be legal as a table key
+	class		The type of element (i.e. "Label")
+	
+	z			The element's 'depth', or 'layer' if you're familiar with apps
+				like Photoshop. Lower numbers are closer to the user, 1 being
+				the highest, and higher numbers are farther away.
+				
+				Any value up to 1023 is allowed, although most elements will
+				need one to work with internally for blitting themselves. The
+				elements start with layer 1023 and work backward as they're
+				created, so it's strongly encouraged to limit yourself to a
+				small range - say 1 to 20 - unless you need more.
+	
+				On each update loop, elements are checked for user input from
+				the "top" down; that is, lower z values will be checked first.
+				If an element detects input, the loop is broken there so nothing
+				beneath it will be triggered.
+				
+				Elements are then drawn from the bottom up, for obvious reasons.
+				
+				When redrawing, elements (or at least, the included classes) will
+				blit from their internal z layers when possible to save on CPU
+				
+				z layers can be hidden, or simply frozen so that they won't accept
+				input from the user, and elements can be moved from one layer to
+				another.
+				
+	x,y			I really shouldn't have to explain these. All of the included
+				classes put their top-left corner at x,y , aside from some of the
+				captions.
+				
+	See the individual class .luas for documentation on their parameters.
+	
+	
+4. Initialize the script window, and a bunch of internal stuff.
+
+	GUI.Init()
+	
+5. Start the main loop.
+
+	GUI.Main()
+
+
+That's it. You have a window, with things in it, so all you need to worry about
+is making the things do what you want them to.
+
+Notes:
+
+- Core.lua includes a whole bunch of additional functions for you to use; font
+presets, color presets, text functions, drawing functions, math functions, an
+espresso machine... all sorts of stuff.
+
+- There are several Example scripts included with the library - these can be 
+run in Reaper, and demonstrate some of the typical things a script GUI might 
+need to do. 
+
+- See 'READ ME - Building classes.txt' for details on how to, duh, build your
+own classes.
+
+I've tried to be as thorough as possible with comments, but please let me know
+if you come across a function or concept that doesn't seem to be explained well.
+I'll find somewhere to stuff in a few extra paragraphs, never fear.

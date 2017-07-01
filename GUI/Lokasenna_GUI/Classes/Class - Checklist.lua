@@ -38,6 +38,7 @@ col_txt			Text color
 col_fill		Checked box color
 font_a			List title font
 font_b			List option font
+frame			Boolean. Draw a frame around the options? Defaults to true.
 shadow			Boolean. Draw a shadow under the text? Defaults to true.
 swap			If dir = "h", draws the option labels below the boxes rather than above
 						 "v", draws the option labels to the left of the boxes rather than right

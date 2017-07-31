@@ -210,7 +210,7 @@ function GUI.Radio:draw()
 	]]--
 	
 	local size = 2*r
-	x = x + r - 1
+	x, y = x + 0.5*pad, y + 0.5*pad
 	if dir == "h" and self.caption ~= "" and not self.swap then y = y + self.cap_h + 2*pad end
 	local x_adj, y_adj = table.unpack(dir == "h" and { (size + pad), 0 } or { 0, (size + pad) } )
 
@@ -297,7 +297,7 @@ function GUI.Radio:onmousedown()
 	
 	-- See which option it's on
 	local mouseopt = self.dir == "h" 	and (GUI.mouse.x - (self.x + self.radius))
-										or	(GUI.mouse.y - (self.y + self.cap_h + self.pad) )
+										or	(GUI.mouse.y - (self.y + self.cap_h) )
 	mouseopt = mouseopt / ((2*self.radius + self.pad) * #self.optarray)
 	mouseopt = GUI.clamp( math.floor(mouseopt * #self.optarray) + 1 , 1, #self.optarray )
 

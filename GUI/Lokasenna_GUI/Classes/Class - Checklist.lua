@@ -184,7 +184,7 @@ function GUI.Checklist:draw()
 	local size = self.chk_w
 	
 	-- Set the options slightly into the frame
-	x = x + 0.5*size
+	x, y = x + 0.5*pad, y + 0.5*pad
 	
 	-- If horizontal, leave some extra space for labels
 	if dir == "h" and self.caption ~= "" and not self.swap then y = y + self.cap_h + 2*pad end	
@@ -269,11 +269,11 @@ function GUI.Checklist:onmouseup()
 
 	-- See which option it's on
 	local mouseopt = self.dir == "h" 	and (GUI.mouse.x - (self.x + 0.5*self.chk_w))
-										or	(GUI.mouse.y - (self.y + self.cap_h + self.pad) )
+										or	(GUI.mouse.y - (self.y + self.cap_h) )
 	mouseopt = mouseopt / ((self.chk_w + self.pad) * #self.optarray)
 	mouseopt = GUI.clamp( math.floor(mouseopt * #self.optarray) + 1 , 1, #self.optarray )
 	
-	-- Make that the current option
+	-- Toggle that option
 	
 	self.optsel[mouseopt] = not self.optsel[mouseopt] 
 

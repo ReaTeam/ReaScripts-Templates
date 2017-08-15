@@ -34,7 +34,6 @@ function rgbToHsl(r, g, b, a)
     h, s = 0, 0 -- achromatic
   else
     local d = max - min
-    local s
     if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
     if max == r then
       h = (g - b) / d

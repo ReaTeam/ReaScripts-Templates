@@ -336,7 +336,7 @@ end
 -- Radio - Mousewheel
 function GUI.Radio:onwheel()
 	
-	self.state = self.state + (self.dir == "h" and 1 or -1) * GUI.mouse.inc
+	self.state = GUI.round(self.state + (self.dir == "h" and 1 or -1) * GUI.mouse.inc)
 	
 	if self.state < 1 then self.state = 1 end
 	if self.state > #self.optarray then self.state = #self.optarray end

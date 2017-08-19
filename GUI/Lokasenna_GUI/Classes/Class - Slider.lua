@@ -517,8 +517,8 @@ function GUI.Slider:onwheel()
 					and (GUI.mouse.x - self.x) / self.w 
 					or  (GUI.mouse.y - self.y) / self.h	
 	
-	local inc = self.dir == "h" and GUI.mouse.inc
-							or -GUI.mouse.inc 
+	local inc = GUI.round( self.dir == "h" and GUI.mouse.inc
+											or -GUI.mouse.inc )
 	
 	local small_diff, small_idx	
 	

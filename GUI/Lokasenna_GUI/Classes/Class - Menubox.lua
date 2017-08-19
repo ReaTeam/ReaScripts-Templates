@@ -318,8 +318,11 @@ end
 -- Menubox - Mousewheel
 function GUI.Menubox:onwheel()
 	
-	local curopt = self.retval - GUI.mouse.inc
-	local inc = (GUI.mouse.inc > 0) and 1 or -1
+	-- Avert a crash if there aren't at least two items in the menu
+	if not self.optarray[2] then return end	
+	
+	local curopt = GUI.round(self.retval - GUI.mouse.inc)
+	local inc = GUI.round((GUI.mouse.inc > 0) and 1 or -1)
 
 	-- Check for illegal values, separators, and submenus
 	while true do

@@ -343,7 +343,7 @@ end
 -- Tabs - Mousewheel
 function GUI.Tabs:onwheel()
 
-	self.state = self.state + GUI.mouse.inc
+	self.state = GUI.round(self.state + GUI.mouse.inc)
 	
 	if self.state < 1 then self.state = 1 end
 	if self.state > self.numopts then self.state = self.numopts end

@@ -1369,7 +1369,7 @@ GUI.Update = function (elm)
 				else	
 				
 					-- Double clicked?
-					if GUI.mouse.downtime and os.clock() - GUI.mouse.downtime < 0.10 then
+					if GUI.mouse.downtime and reaper.time_precise() - GUI.mouse.downtime < 0.10 then
 	
 						GUI.mouse.downtime = nil
 						GUI.mouse.dbl_clicked = true
@@ -1410,7 +1410,7 @@ GUI.Update = function (elm)
 			GUI.mouse.dbl_clicked = false
 			GUI.mouse.ox, GUI.mouse.oy = -1, -1
 			GUI.mouse.lx, GUI.mouse.ly = -1, -1
-			GUI.mouse.downtime = os.clock()
+			GUI.mouse.downtime = reaper.time_precise()
 
 		end
 		
@@ -1427,7 +1427,7 @@ GUI.Update = function (elm)
 				else
 		
 						-- Double clicked?
-					if GUI.mouse.r_downtime and os.clock() - GUI.mouse.r_downtime < 0.20 then
+					if GUI.mouse.r_downtime and reaper.time_precise() - GUI.mouse.r_downtime < 0.20 then
 						
 						GUI.mouse.r_downtime = nil
 						GUI.mouse.r_dbl_clicked = true
@@ -1468,7 +1468,7 @@ GUI.Update = function (elm)
 			GUI.mouse.r_dbl_clicked = false
 			GUI.mouse.r_ox, GUI.mouse.r_oy = -1, -1
 			GUI.mouse.r_lx, GUI.mouse.r_ly = -1, -1
-			GUI.mouse.r_downtime = os.clock()
+			GUI.mouse.r_downtime = reaper.time_precise()
 
 		end
 
@@ -1487,7 +1487,7 @@ GUI.Update = function (elm)
 
 				else	
 					-- Double clicked?
-					if GUI.mouse.m_downtime and os.clock() - GUI.mouse.m_downtime < 0.20 then
+					if GUI.mouse.m_downtime and reaper.time_precise() - GUI.mouse.m_downtime < 0.20 then
 
 						GUI.mouse.m_downtime = nil
 						GUI.mouse.m_dbl_clicked = true
@@ -1529,7 +1529,7 @@ GUI.Update = function (elm)
 			GUI.mouse.m_dbl_clicked = false
 			GUI.mouse.m_ox, GUI.mouse.m_oy = -1, -1
 			GUI.mouse.m_lx, GUI.mouse.m_ly = -1, -1
-			GUI.mouse.m_downtime = os.clock()
+			GUI.mouse.m_downtime = reaper.time_precise()
 
 		end
 

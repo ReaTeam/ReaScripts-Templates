@@ -1,5 +1,3 @@
--- WORK IN PROGRESS. DOESN'T WORK.
-
 -- TO DO:
 -- prevent bad value insertion
 -- sort table

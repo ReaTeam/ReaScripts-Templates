@@ -15,7 +15,7 @@ function MultiSplitMediaItem(item, times)
 	for i, time in ipairs(times) do
 		
 		-- store item so we can split it next time around
-		local item = SplitMediaItem(item, time)
+		item = SplitMediaItem(item, time)
 		
 		-- add resulting item to array
 		table.insert(items, item)

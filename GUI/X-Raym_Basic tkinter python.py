@@ -10,7 +10,11 @@ from tkinter import *
 
 root = Tk()
 
+# Add your buttons below
+
 label = Label(root, text="Hello World")
 label.pack()
+
+# Add your buttons above
 
 root.mainloop()

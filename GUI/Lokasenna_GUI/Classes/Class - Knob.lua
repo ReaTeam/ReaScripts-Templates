@@ -9,7 +9,8 @@ z				Element depth, used for hiding and disabling layers. 1 is the highest.
 x, y, w			Coordinates of top-left corner, width. Height is fixed.
 caption			Label / question
 min, max		Minimum and maximum values
-steps			How many steps between min and max (inclusive, i.e. 0-11 = 12 steps)
+steps			How many steps between min and max (inclusive, i.e. 0 - 11 = 12 steps)
+																	-3 - +12 = 16 (0 is a step)
 default			What step the knob should start on (as above, a default of 12 would start at value 11)
 
 
@@ -30,9 +31,11 @@ output			Allows the value labels to be modified; accepts several different var t
 				functions	Replaces each value with the returned value from
 							output(step), numbered as above
 							
+				Output will always count steps starting from 0, so you'll have to account for minimum
+				values in the final string yourself.
+	
+	
 Extra methods:
-
-
 
 GUI.Val()		Returns the current display value of the knob. i.e. 
 				
@@ -213,7 +216,7 @@ function GUI.Knob:draw()
 				GUI.font(self.font_b)
 			end
 			
-			local output = i
+			local output = i + min
 
 			if self.output then
 				local t = type(self.output)

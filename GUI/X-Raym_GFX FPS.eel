@@ -1,0 +1,22 @@
+window_w = 640;
+window_h = 270;
+lasttime = 0;
+clock = 0;
+
+
+function run() (
+  
+  newtime= time_precise();
+  newtime-lasttime >= 1 ? (
+    clock_hz = clock;
+    lasttime=newtime;
+    clock = 0;
+  );
+  clock = clock + 1;
+  
+  defer("run();");
+
+);
+
+gfx_init("GFX" , window_w, window_h, false, 0, 100);
+run();

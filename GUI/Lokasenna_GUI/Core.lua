@@ -1162,6 +1162,13 @@ GUI.Init = function ()
 		lwheel = 0
 		
 	}
+  
+	-- Store which element the mouse was clicked on.
+	--[[ This is essential for allowing drag behaviour where the dragging motion affects the element position.
+				The element may move away from the original mouse-down location, which caused unintented behaviour in the original code.]]-- 
+	GUI.mouse_down_element = nil
+	GUI.rmouse_down_element = nil
+	GUI.mmouse_down_element = nil
 		
 	-- Convert color presets from 0..255 to 0..1
 	for i, col in pairs(GUI.colors) do
@@ -1334,6 +1341,7 @@ end
 GUI.Update = function (elm)
 	
 	local x, y = GUI.mouse.x, GUI.mouse.y
+	local x_delta, y_delta = x-GUI.mouse.lx, y-GUI.mouse.ly
 	local wheel = GUI.mouse.wheel
 	local inside = GUI.IsInside(elm, x, y)
 	
@@ -1359,35 +1367,44 @@ GUI.Update = function (elm)
 
 				-- Was a different element clicked?
 				if not inside then 
+					if GUI.mouse_down_element == elm then
+						-- Should already have been reset by the mouse-up, but safeguard...
+						GUI.mouse_down_element = nil
+					end
 					if elm.focus then
 						elm.focus = false
 						elm:lostfocus()
 					end
 					return 0
-				else	
-				
-					-- Double clicked?
-					if GUI.mouse.downtime and reaper.time_precise() - GUI.mouse.downtime < 0.10 then
-	
-						GUI.mouse.downtime = nil
-						GUI.mouse.dbl_clicked = true
-						elm:ondoubleclick()						
-						
-					elseif not GUI.mouse.dbl_clicked then
-				
-						elm.focus = true
-						elm:onmousedown()						
-					
+				else
+					if GUI.mouse_down_element == nil then -- Prevent click-through
+
+						GUI.mouse_down_element = elm
+
+						-- Double clicked?
+						if GUI.mouse.downtime and reaper.time_precise() - GUI.mouse.downtime < 0.10 then
+
+							GUI.mouse.downtime = nil
+							GUI.mouse.dbl_clicked = true
+							elm:ondoubleclick()
+
+						elseif not GUI.mouse.dbl_clicked then
+
+							elm.focus = true
+							elm:onmousedown()
+
+						end
+
+						GUI.elm_updated = true
 					end
 					
 					GUI.mouse.down = true
 					GUI.mouse.ox, GUI.mouse.oy = x, y
-					GUI.elm_updated = true
 					
 				end
 							
 			-- 		Dragging? 									Did the mouse start out in this element?
-			elseif (x ~= GUI.mouse.lx or y ~= GUI.mouse.ly) and GUI.IsInside(elm, GUI.mouse.ox, GUI.mouse.oy) then
+			elseif (x_delta ~= 0 or y_delta ~= 0) and GUI.mouse_down_element == elm then
 			
 				if elm.focus ~= false then 
 
@@ -1398,17 +1415,20 @@ GUI.Update = function (elm)
 			end
 
 		-- If it was originally clicked in this element and has now been released
-		elseif GUI.mouse.down and GUI.IsInside(elm, GUI.mouse.ox, GUI.mouse.oy) then
-		
-			-- We don't want to trigger an extra mouse-up after double clicking
-			if not GUI.mouse.dbl_clicked then elm:onmouseup() end
-			
-			GUI.elm_updated = true
-			GUI.mouse.down = false
-			GUI.mouse.dbl_clicked = false
-			GUI.mouse.ox, GUI.mouse.oy = -1, -1
-			GUI.mouse.lx, GUI.mouse.ly = -1, -1
-			GUI.mouse.downtime = reaper.time_precise()
+		elseif GUI.mouse.down and GUI.mouse_down_element == elm then
+
+				GUI.mouse_down_element = nil
+
+				-- We don't want to trigger an extra mouse-up after double clicking
+				if not GUI.mouse.dbl_clicked then elm:onmouseup() end
+
+				GUI.elm_updated = true
+				GUI.mouse.down = false
+				GUI.mouse.dbl_clicked = false
+				GUI.mouse.ox, GUI.mouse.oy = -1, -1
+				GUI.mouse.lx, GUI.mouse.ly = -1, -1
+				GUI.mouse.downtime = reaper.time_precise()
+
 
 		end
 		
@@ -1421,31 +1441,41 @@ GUI.Update = function (elm)
 
 				-- Was a different element clicked?
 				if not inside then 
+					if GUI.rmouse_down_element == elm then
+						-- Should already have been reset by the mouse-up, but safeguard...
+						GUI.rmouse_down_element = nil
+					end
 					--elm.focus = false
 				else
-		
-						-- Double clicked?
-					if GUI.mouse.r_downtime and reaper.time_precise() - GUI.mouse.r_downtime < 0.20 then
-						
-						GUI.mouse.r_downtime = nil
-						GUI.mouse.r_dbl_clicked = true
-						elm:onr_doubleclick()
-						
-					elseif not GUI.mouse.r_dbl_clicked then
-			
-						elm:onmouser_down()
-						
+					if GUI.rmouse_down_element == nil then -- Prevent click-through
+
+						GUI.rmouse_down_element = elm
+
+							-- Double clicked?
+						if GUI.mouse.r_downtime and reaper.time_precise() - GUI.mouse.r_downtime < 0.20 then
+
+							GUI.mouse.r_downtime = nil
+							GUI.mouse.r_dbl_clicked = true
+							elm:onr_doubleclick()
+
+						elseif not GUI.mouse.r_dbl_clicked then
+
+							elm:onmouser_down()
+
+						end
+
+						GUI.elm_updated = true
+
 					end
 					
 					GUI.mouse.r_down = true
 					GUI.mouse.r_ox, GUI.mouse.r_oy = x, y
-					GUI.elm_updated = true
-				
+
 				end
 				
 		
 			-- 		Dragging? 									Did the mouse start out in this element?
-			elseif (x ~= GUI.mouse.r_lx or y ~= GUI.mouse.r_ly) and GUI.IsInside(elm, GUI.mouse.r_ox, GUI.mouse.r_oy) then
+			elseif (x_delta ~= 0 or y_delta ~= 0) and GUI.rmouse_down_element == elm then
 			
 				if elm.focus ~= false then 
 
@@ -1457,7 +1487,9 @@ GUI.Update = function (elm)
 			end
 
 		-- If it was originally clicked in this element and has now been released
-		elseif GUI.mouse.r_down and GUI.IsInside(elm, GUI.mouse.r_ox, GUI.mouse.r_oy) then 
+		elseif GUI.mouse.r_down and GUI.rmouse_down_element == elm then 
+		
+			GUI.rmouse_down_element = nil
 		
 			if not GUI.mouse.r_dbl_clicked then elm:onmouser_up() end
 
@@ -1482,31 +1514,41 @@ GUI.Update = function (elm)
 
 				-- Was a different element clicked?
 				if not inside then 
+					if GUI.mmouse_down_element == elm then
+						-- Should already have been reset by the mouse-up, but safeguard...
+						GUI.mmouse_down_element = nil
+					end
+				else
+					if GUI.mmouse_down_element == nil then -- Prevent click-through
 
-				else	
-					-- Double clicked?
-					if GUI.mouse.m_downtime and reaper.time_precise() - GUI.mouse.m_downtime < 0.20 then
+						GUI.mmouse_down_element = elm
 
-						GUI.mouse.m_downtime = nil
-						GUI.mouse.m_dbl_clicked = true
-						elm:onm_doubleclick()
+						-- Double clicked?
+						if GUI.mouse.m_downtime and reaper.time_precise() - GUI.mouse.m_downtime < 0.20 then
 
-					else
-					
-						elm:onmousem_down()					
+							GUI.mouse.m_downtime = nil
+							GUI.mouse.m_dbl_clicked = true
+							elm:onm_doubleclick()
 
-					end				
+						else
+
+							elm:onmousem_down()
+
+						end
+
+						GUI.elm_updated = true
+
+				  end
 
 					GUI.mouse.m_down = true
 					GUI.mouse.m_ox, GUI.mouse.m_oy = x, y
-					GUI.elm_updated = true
 
 				end
 				
 
 			
 			-- 		Dragging? 									Did the mouse start out in this element?
-			elseif (x ~= GUI.mouse.m_lx or y ~= GUI.mouse.m_ly) and GUI.IsInside(elm, GUI.mouse.m_ox, GUI.mouse.m_oy) then
+			elseif (x_delta ~= 0 or y_delta ~= 0) and GUI.mmouse_down_element == elm then
 			
 				if elm.focus ~= false then 
 					
@@ -1518,7 +1560,9 @@ GUI.Update = function (elm)
 			end
 
 		-- If it was originally clicked in this element and has now been released
-		elseif GUI.mouse.m_down and GUI.IsInside(elm, GUI.mouse.m_ox, GUI.mouse.m_oy) then
+		elseif GUI.mouse.m_down and GUI.mmouse_down_element == elm then
+		
+			GUI.mmouse_down_element = nil
 		
 			if not GUI.mouse.m_dbl_clicked then elm:onmousem_up() end
 			

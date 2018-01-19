@@ -1596,7 +1596,7 @@ GUI.Update = function (elm)
 		
 		GUI.mouse.inc = (GUI.mouse.wheel - GUI.mouse.lwheel) / 120
 		
-		elm:onwheel()
+		elm:onwheel(GUI.mouse.inc)
 		GUI.elm_updated = true
 		GUI.mouse.lwheel = GUI.mouse.wheel
 	

@@ -1409,7 +1409,7 @@ GUI.Update = function (elm)
 				if elm.focus ~= false then 
 
 					GUI.elm_updated = true
-					elm:ondrag()
+					elm:ondrag(x_delta, y_delta)
 					
 				end
 			end
@@ -1479,7 +1479,7 @@ GUI.Update = function (elm)
 			
 				if elm.focus ~= false then 
 
-					elm:onr_drag()
+					elm:onr_drag(x_delta, y_delta)
 					GUI.elm_updated = true
 
 				end
@@ -1552,7 +1552,7 @@ GUI.Update = function (elm)
 			
 				if elm.focus ~= false then 
 					
-					elm:onm_drag()
+					elm:onm_drag(x_delta, y_delta)
 					GUI.elm_updated = true
 					
 				end

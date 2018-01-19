@@ -81,7 +81,7 @@ end
 
 function GUI.Frame:init()
 	
-	if self.text ~= "" then
+	if self.text and self.text:len() > 0 then
 		self.text = GUI.word_wrap(self.text, self.font, self.w - 2*self.pad, self.txt_indent, self.txt_pad)
 	end
 	
@@ -117,7 +117,7 @@ function GUI.Frame:draw()
 		gfx.rect(x, y, w, h, fill)
 	end
 	
-	if self.text then
+	if self.text and self.text:len() > 0 then
 		
 		GUI.font(self.font)
 		GUI.color(self.col_txt)

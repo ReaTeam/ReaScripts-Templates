@@ -482,7 +482,7 @@ end
 -- Returns the total width (in pixels) for a given string and font
 GUI.get_txt_width = function (str, font)
 	
-	if not GUI.txt_width then GUI.ini_txt_width() end 
+	if not GUI.txt_width then GUI.init_txt_width() end 
 
 	local widths = GUI.txt_width[font]
 	local w = 0

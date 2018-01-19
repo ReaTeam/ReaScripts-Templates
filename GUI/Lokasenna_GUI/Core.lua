@@ -1079,6 +1079,7 @@ GUI.z_max = 0
 GUI.update_elms_list = function (init)
 	
 	local z_table = {}
+	GUI.z_max = 0
 
 	for key, __ in pairs(GUI.elms) do
 

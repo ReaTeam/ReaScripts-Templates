@@ -1107,13 +1107,9 @@ GUI.update_elms_list = function (init)
 			GUI.elms[key]:init()
 
 		end
-		
-		GUI.z_max = math.max(z, GUI.z_max)
-		
-	end
 
-	for i = 0, GUI.z_max do
-		if not z_table[i] then z_table[i] = {} end
+		GUI.z_max = math.max(z, GUI.z_max)
+
 	end
 
 	GUI.elms_list = z_table
@@ -1232,10 +1228,10 @@ GUI.Main = function ()
 	GUI.elm_updated = false
 
 	for i = 0, GUI.z_max do
-		if #GUI.elms_list[i] > 0 and not (GUI.elms_hide[i] or GUI.elms_freeze[i]) then
+		if GUI.elms_list[i] and #GUI.elms_list[i] > 0 and not (GUI.elms_hide[i] or GUI.elms_freeze[i]) then
 			for __, elm in pairs(GUI.elms_list[i]) do
 
-				if elm then GUI.Update(GUI.elms[elm]) end
+				if elm and GUI.elms[elm] then GUI.Update(GUI.elms[elm]) end
 				--if GUI.elm_updated then break end
 				
 			end
@@ -1300,8 +1296,8 @@ GUI.Main = function ()
 		gfx.rect(0, 0, w, h, 1)
 
 		for i = GUI.z_max, 0, -1 do
-			if #GUI.elms_list[i] > 0 and not GUI.elms_hide[i] then
-				
+			if GUI.elms_list[i] and #GUI.elms_list[i] > 0 and not GUI.elms_hide[i] then
+
 				if GUI.redraw_z[i] then
 					
 					-- Set this before we redraw, so that elms can call a redraw from

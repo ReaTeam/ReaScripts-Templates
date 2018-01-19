@@ -1105,9 +1105,11 @@ GUI.update_elms_list = function (init)
 		if init then 
 			
 			GUI.elms[key]:init()
-			GUI.z_max = math.max(z, GUI.z_max)
 
 		end
+		
+		GUI.z_max = math.max(z, GUI.z_max)
+		
 	end
 
 	for i = 0, GUI.z_max do

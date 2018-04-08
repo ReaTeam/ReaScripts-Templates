@@ -1,20 +1,5 @@
 		
-	Lokasenna_GUI 1.0
-
--------------------------
-	Change log:
-
-April 7/17
-- Fixed a few Slider bugs
-- Ctrl+dragging will now offer more precision for Sliders with more than
-  150 steps
-- Added Slider parameters: show_handles, show_values, output, cap_x, cap_y
-  (see Slider.lua's comments)
-- Added/fixed the horizontal (dir = "h") mode for Checklists and Radios.
-- 'Example - General demonstration.lua' now shows the use of 'output' 
-  parameters for the knob and one of the sliders
-- Added 'READ ME - Building classes.txt' for anyone who's interested
-- More comments here and there
+	Lokasenna_GUI 2.0
 
 -------------------------
 

@@ -1,12 +1,16 @@
-----------------------------------------------------------------
-------------------Copy everything from here---------------------
-----------------------------------------------------------------
+--[[
+	
+	Lokasenna_GUI 2.0
+	
+	Core functionality
+	
+]]--
 
 local function GUI_table ()
 
 local GUI = {}
 
-GUI.version = "1.0"
+GUI.version = "2.0"
 
 
 -- Print stuff to the Reaper console. For debugging purposes.
@@ -22,7 +26,7 @@ GUI.file_sep = string.match(reaper.GetOS(), "Win") and "\\" or "/"
 
 
 --Also might need to know this
-GUI.SWS_exists = reaper.APIExists("BR_Win32_GetPrivateProfileString")
+GUI.SWS_exists = reaper.APIExists("CF_GetClipboardBig")
 
 
 
@@ -731,7 +735,9 @@ GUI.round = function (num, places)
 	
 end
 
--- Make sure val is between min and max
+-- Make sure num is between min and max
+-- I think it will return the correct value regardless of what
+-- order you provide the values in.
 GUI.clamp = function (num, min, max)
 	if min > max then min, max = max, min end
 	return math.min(math.max(num, min), max)
@@ -1330,6 +1336,12 @@ GUI.Main = function ()
 		GUI.Draw_Version()		
 		
 	end
+		
+	-- Reset these just in case an element or some user code forgot to,
+	-- otherwise we get things like the whole buffer being blitted with a=0.2
+	gfx.mode = 0
+	gfx.set(0, 0, 0, 1)
+	
 	gfx.dest = -1
 	gfx.blit(0, 1, 0, 0, 0, w, h, 0, 0, w, h, 0, 0)
 	
@@ -1645,7 +1657,7 @@ GUI.New = function (name, elm, ...)
 		return 0
 	end
 	
-	GUI.elms[name] = GUI[elm]:new(name, ...)	
+	GUI.elms[name] = GUI[elm]:new(name, ...)
 	if GUI.gfx_open then GUI.elms[name]:init() end
 	
 end

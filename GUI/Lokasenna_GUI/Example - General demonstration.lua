@@ -1,5 +1,5 @@
 --[[
-	Lokasenna_GUI 2.0 preview
+	Lokasenna_GUI 2.0
 	
 	-- Tabs and layer sets
 	-- Accessing elements' parameters
@@ -38,23 +38,19 @@ end
 -- when they look for functions that aren't there.
 req("Core.lua")()
 
--- For better cross-platform behavior.
-local sep = GUI.file_sep
-
-req("Classes"..sep.."Class - Label.lua")()
-req("Classes"..sep.."Class - Knob.lua")()
-req("Classes"..sep.."Class - Tabs.lua")()
-req("Classes"..sep.."Class - Slider.lua")()
-req("Classes"..sep.."Class - Button.lua")()
-req("Classes"..sep.."Class - Menubox.lua")()
-req("Classes"..sep.."Class - Checklist.lua")()
-req("Classes"..sep.."Class - Radio.lua")()
-req("Classes"..sep.."Class - Textbox.lua")()
-req("Classes"..sep.."Class - Frame.lua")()
+req("Classes/Class - Label.lua")()
+req("Classes/Class - Knob.lua")()
+req("Classes/Class - Tabs.lua")()
+req("Classes/Class - Slider.lua")()
+req("Classes/Class - Button.lua")()
+req("Classes/Class - Menubox.lua")()
+req("Classes/Class - Checklist.lua")()
+req("Classes/Class - Radio.lua")()
+req("Classes/Class - Textbox.lua")()
+req("Classes/Class - Frame.lua")()
 
 -- If any of the requested libraries weren't found, abort the script.
 if missing_lib then return 0 end
-
 
 
 GUI.name = "New Window"
@@ -123,7 +119,7 @@ end
 	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
 	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
 	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-
+	Listbox		name, 	z, 	x, 	y, 	w, 	h, list[, multi, shadow]
 	
 ]]--
 

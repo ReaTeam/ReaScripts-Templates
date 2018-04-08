@@ -1,5 +1,5 @@
 --[[
-	Lokasenna_GUI 2.0 preview
+	Lokasenna_GUI 2.0
 
 	- Using the Main loop to monitor and interact with things in Reaper
 	- Using z layers and related functions to move elements around
@@ -42,20 +42,12 @@ req("Core.lua")()
 -- For better cross-platform behavior.
 local sep = GUI.file_sep
 
-req("Classes"..sep.."Class - Label.lua")()
---req("Classes"..sep.."Class - Knob.lua")()
---req("Classes"..sep.."Class - Tabs.lua")()
-req("Classes"..sep.."Class - Slider.lua")()
---req("Classes"..sep.."Class - Button.lua")()
---req("Classes"..sep.."Class - Menubox.lua")()
---req("Classes"..sep.."Class - Checklist.lua")()
---req("Classes"..sep.."Class - Radio.lua")()
---req("Classes"..sep.."Class - Textbox.lua")()
-req("Classes"..sep.."Class - Frame.lua")()
+req("Classes/Class - Label.lua")()
+req("Classes/Class - Slider.lua")()
+req("Classes/Class - Frame.lua")()
 
 -- If any of the requested libraries weren't found, abort the script.
 if missing_lib then return 0 end
-
 
 
 GUI.name = "Example - Main, Z, and Methods"
@@ -65,7 +57,6 @@ GUI.anchor, GUI.corner = "mouse", "C"
 
 -- Pre-declaring this so every function has access to it
 local tr
-
 
 
 --[[	
@@ -97,7 +88,7 @@ local tr
 	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
 	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
 	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-
+	Listbox		name, 	z, 	x, 	y, 	w, 	h, list[, multi, shadow]
 	
 ]]--
 

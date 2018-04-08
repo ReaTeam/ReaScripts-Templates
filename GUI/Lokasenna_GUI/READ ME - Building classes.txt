@@ -1,5 +1,5 @@
 	
-	Lokasenna_GUI 1.0 - Building classes
+	Lokasenna_GUI 2.0 - Building classes
 	
 This file will hopefully provide all of the information you need to
 build your own classes for use with Lokasenna_GUI.

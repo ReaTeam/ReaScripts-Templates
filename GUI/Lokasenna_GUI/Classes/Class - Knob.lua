@@ -168,7 +168,7 @@ function GUI.Knob:draw()
 	
 	local min, max = self.min, self.max
 
-	local default = self.default
+	--local default = self.default
 	
 	local vals = self.vals
 	local stepangle = self.stepangle
@@ -315,6 +315,18 @@ function GUI.Knob:ondrag()
 
 	GUI.redraw_z[self.z] = true
 
+end
+
+
+-- Knob - Doubleclick
+function GUI.Knob:ondoubleclick()
+	
+	self.curstep = self.default
+	self.curval = self.curstep / self.steps
+	self.retval = GUI.round(((self.max - self.min) / self.steps) * self.curstep + self.min)
+	
+	GUI.redraw_z[self.z] = true
+	
 end
 
 

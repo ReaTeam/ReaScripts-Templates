@@ -93,14 +93,13 @@ function GUI.Frame:draw()
 	if self.color == "none" then return 0 end
 	
 	local x, y, w, h = self.x, self.y, self.w, self.h
-	local dist = GUI.shadow_dist
 	local fill = self.fill
 	local round = self.round
 	local shadow = self.shadow
 	
 	if shadow then
 		GUI.color("shadow")
-		for i = 1, dist do
+		for i = 1, GUI.shadow_dist do
 			if round > 0 then
 				GUI.roundrect(x + i, y + i, w, h, round, 1, fill)
 			else

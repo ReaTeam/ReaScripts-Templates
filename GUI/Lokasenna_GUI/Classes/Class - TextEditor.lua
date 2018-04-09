@@ -84,7 +84,7 @@ function GUI.TextEditor:new(name, z, x, y, w, h, text, caption, pad)
 	txt.wnd_pos = {x = 0, y = 1}
 	txt.caret = {x = 0, y = 1}
 
-	txt.wnd_h, txt.wnd_w, txt.char_w = nil, nil, nil
+	txt.char_h, txt.wnd_h, txt.wnd_w, txt.char_w = nil, nil, nil, nil
 
 	txt.focus = false
 		
@@ -99,7 +99,7 @@ function GUI.TextEditor:init()
 	
 	-- Process the initial string; split it into a table by line
 	if type(self.retval) == "string" then self:val(self.retval) end
-
+	
 	local x, y, w, h = self.x, self.y, self.w, self.h
 	
 	self.buff = GUI.GetBuffer()
@@ -209,7 +209,9 @@ end
 
 
 function GUI.TextEditor:onmousedown(scroll)
-	
+
+
+
 	-- If over the scrollbar, or we came from :ondrag with an origin point
 	-- that was over the scrollbar...
 	if scroll or self:overscrollbar() then
@@ -224,14 +226,23 @@ function GUI.TextEditor:onmousedown(scroll)
 		
 		GUI.redraw_z[self.z] = true
 	
+	-- Shift+click to select text
+	elseif GUI.mouse.cap & 8 == 8 and self.caret then
+			
+			self.sel_s = {x = self.caret.x, y = self.caret.y}
+			self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
+			self.sel_e = {x = self.caret.x, y = self.caret.y}
+	
+			GUI.Msg("s = "..tostring(self.sel_s.x)..", "..tostring(self.sel_s.y))
+			GUI.Msg("e = "..tostring(self.sel_e.x)..", "..tostring(self.sel_e.y))
+	
 	-- Place the caret
 	else
 	
 		self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
+		self:clearselection()
 	
 	end
-	
-	self:clearselection()
 	
 end
 
@@ -298,7 +309,7 @@ function GUI.TextEditor:ontype()
 	
 	
 	-- Non-typeable / navigation chars
-	else
+	elseif self.keys[GUI.char] then
 		
 		local shift = GUI.mouse.cap & 8 == 8
 		
@@ -390,8 +401,9 @@ function GUI.TextEditor:drawcaret()
 		GUI.color("txt")
 		
 		gfx.rect(	self.x + self.pad + (caret_wnd.x * self.char_w), 
-					self.y + self.pad + (caret_wnd.y * gfx.texth), 
-					2, gfx.texth - 2)
+					self.y + self.pad + (caret_wnd.y * self.char_h), 
+					self.insert_caret and self.char_w or 2, 
+					self.char_h - 2)
 		
 	end
 		
@@ -417,7 +429,7 @@ function GUI.TextEditor:drawselection()
 			
 			-- Convert from char/row coords to actual pixels
 			x, y =	off_x + (coords[i].x - self.wnd_pos.x) * self.char_w,
-					off_y + (coords[i].y - self.wnd_pos.y) * gfx.texth
+					off_y + (coords[i].y - self.wnd_pos.y) * self.char_h
 							
 									-- Really kludgy, but it fixes a weird issue
 									-- where wnd_pos.x > 0 was drawing all the widths
@@ -427,7 +439,7 @@ function GUI.TextEditor:drawselection()
 			-- Keep the selection from spilling out past the scrollbar
 			w = math.min(w, self.x + self.w - x - self.pad)
 			
-			h =	gfx.texth
+			h =	self.char_h
 		
 			gfx.rect(x, y, w, h, true)
 
@@ -531,7 +543,7 @@ function GUI.TextEditor:checkselection()
 				w = math.min(self:wnd_right(), #self.retval[i]) - self.wnd_pos.x
 				insert_coords(self.wnd_pos.x, i, w)
 				
-				--gfx.rect(off_x, off_y + (i - self.wnd_pos.y) * gfx.texth, 4, gfx.texth, true)
+				--gfx.rect(off_x, off_y + (i - self.wnd_pos.y) * self.char_h, 4, self.char_h, true)
 
 			-- We're past the selection
 			elseif i >= ey then
@@ -607,6 +619,8 @@ end
 
 function GUI.TextEditor:deleteselection()
 	
+	if not (self.sel_s and self.sel_e) then return 0 end
+	
 	local sx, sy, ex, ey = self.sel_s.x, self.sel_s.y, self.sel_e.x, self.sel_e.y
 	
 	-- Make sure the Start is before the End
@@ -675,7 +689,8 @@ function GUI.TextEditor:wnd_recalc()
 	
 	GUI.font(self.font_b)
 	
-	self.wnd_h = math.floor((self.h - 2*self.pad) / gfx.texth)
+	self.char_h = gfx.texth
+	self.wnd_h = math.floor((self.h - 2*self.pad) / self.char_h)
 	self.char_w = self.char_w or gfx.measurestr("_")
 	self.wnd_w = self.wnd_w or math.floor(self.w / self.char_w)	
 	
@@ -767,7 +782,7 @@ function GUI.TextEditor:windowtocaret()
 	local bot = self:wnd_bottom()
 	local adj = (	(self.caret.y < self.wnd_pos.y) and -1	)
 			or	(	(self.caret.y >= bot) and 1	)
-			or	(	(bot > #self.retval and -(bot - #self.retval) ) )
+			or	(	(bot > #self.retval and -(bot - #self.retval - 1) ) )
 	
 	if adj then self.wnd_pos.y = GUI.clamp(1, self.wnd_pos.y + adj, self.caret.y) end
 	
@@ -781,8 +796,7 @@ function GUI.TextEditor:getcaret(x, y)
 		
 	tmp.x = math.floor(		((x - self.x) / self.w ) * self.wnd_w) + self.wnd_pos.x
 	tmp.y = math.floor(		(y - (self.y + self.pad)) 
-						/	(self.h - 2 * self.pad)
-						* 	self.wnd_h)
+						/	self.char_h)
 			+ self.wnd_pos.y
 
 	tmp.y = GUI.clamp(1, tmp.y, #self.retval)
@@ -811,9 +825,12 @@ end
 function GUI.TextEditor:insertstring(str)
 	
 	local sx, sy = 	(self.sel_s and self.sel_s.x or self.caret.x), 
-	(self.sel_s and self.sel_s.y or self.caret.y)
+					(self.sel_s and self.sel_s.y or self.caret.y)
 					
-	if self.sel_s then self:deleteselection() end
+	if self.sel_s then 
+		self:deleteselection()
+		sx, sy = self.caret.x, self.caret.y
+	end
 	
 	local tmp = self:stringtotable(str)
 	
@@ -841,7 +858,7 @@ end
 function GUI.TextEditor:insertchar()
 	
 	local str = self.retval[self.caret.y]
-	local a, b = str:sub(1, self.caret.x), str:sub(self.caret.x + 1)
+	local a, b = str:sub(1, self.caret.x), str:sub(self.caret.x + (self.insert_caret and 2 or 1))
 	self.retval[self.caret.y] = a..string.char(GUI.char)..b
 	self.caret.x = self.caret.x + 1
 	
@@ -919,6 +936,33 @@ GUI.TextEditor.keys = {
 		
 	end,
 	
+	[GUI.chars.PGUP] = function(self)
+
+		local caret_off = self.caret and (self.caret.y - self.wnd_pos.y)
+		
+		self.wnd_pos.y = math.max(1, self.wnd_pos.y - self.wnd_h)
+		
+		if caret_off then
+			self.caret.y = self.wnd_pos.y + caret_off
+			self.caret.x = math.min(self.caret.x, #self.retval[self.caret.y])
+		end
+		
+	end,
+	
+	[GUI.chars.PGDN] = function(self)
+
+		local caret_off = self.caret and (self.caret.y - self.wnd_pos.y)
+		
+		self.wnd_pos.y = math.min(#self.retval - self.wnd_h + 1, self.wnd_pos.y + self.wnd_h)
+
+		if caret_off then
+			self.caret.y = self.wnd_pos.y + caret_off
+			self.caret.x = math.min(self.caret.x, #self.retval[self.caret.y])
+		end
+		
+	end,
+	
+	
 	[GUI.chars.BACKSPACE] = function(self)
 		
 		-- Is there a selection?
@@ -942,6 +986,12 @@ GUI.TextEditor.keys = {
 			self.caret.y = self.caret.y - 1
 			
 		end
+		
+	end,
+	
+	[GUI.chars.INSERT] = function(self)
+		
+		self.insert_caret = not self.insert_caret
 		
 	end,
 	

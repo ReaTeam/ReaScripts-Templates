@@ -309,8 +309,8 @@ function GUI.Listbox:drawselection()
 		
 		if self.retval[i] and i >= self.wnd_y and i < self:wnd_bottom() then
 		
-			y = off_y + (i - self.wnd_y) * gfx.texth		
-			gfx.rect(off_x, y, w, gfx.texth, true)
+			y = off_y + (i - self.wnd_y) * self.char_h		
+			gfx.rect(off_x, y, w, self.char_h, true)
 
 		end
 	
@@ -364,7 +364,8 @@ function GUI.Listbox:wnd_recalc()
 	
 	GUI.font(self.font_b)
 	
-	self.wnd_h = math.floor((self.h - 2*self.pad) / gfx.texth)
+	self.char_h = gfx.texth
+	self.wnd_h = math.floor((self.h - 2*self.pad) / self.char_h)
 	self.char_w = self.char_w or gfx.measurestr("_")
 	self.wnd_w = self.wnd_w or math.floor(self.w / self.char_w)	
 	
@@ -381,7 +382,13 @@ end
 
 function GUI.Listbox:getitem(y)
 	
-	local item = math.floor( ( (y - self.y) / self.h ) * self.wnd_h) + self.wnd_y
+	--local item = math.floor( ( (y - self.y) / self.h ) * self.wnd_h) + self.wnd_y
+
+	GUI.font(self.font_b)
+
+	local item = math.floor(	(y - (self.y + self.pad))
+								/	self.char_h)
+				+ self.wnd_y
 
 	item = GUI.clamp(1, item, #self.list)
 	

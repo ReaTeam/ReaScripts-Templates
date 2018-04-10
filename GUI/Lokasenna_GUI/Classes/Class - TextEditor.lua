@@ -273,28 +273,28 @@ end
 
 function GUI.TextEditor:ontype()
 
-
-	-- Ctrl shortcuts
-	if GUI.mouse.cap & 4 == 4 then
+	-- Non-typeable / navigation chars
+	if self.keys[GUI.char] then
 		
-		-- Ctrl+A
-		if GUI.char == 1 then
-			
-			self:selectall()
+		local shift = GUI.mouse.cap & 8 == 8
 		
-		
-		-- Clipboard stuff requires SWS
-		elseif GUI.SWS_exists then
-			
-			self:clipboardkeys()
-			
-		else
-		
-			reaper.ShowMessageBox(	"Clipboard functions require the SWS extension, v2.9.7 or newer."..
-									"\n\nDownload the latest version at http://www.sws-extension.org/index.php",
-									"Sorry!", 0)		
+		if shift and not self.sel_s then 
+			self.sel_s = {x = self.caret.x, y = self.caret.y}
 		end
-
+		
+		-- Flag for some keys (clipboard shortcuts) to skip
+		-- the next section
+		local bypass = self.keys[GUI.char](self)
+		
+		if shift and GUI.char ~= (GUI.chars.BACKSPACE) then
+			
+			self.sel_e = {x = self.caret.x, y = self.caret.y}
+			
+		elseif not bypass then
+		
+			self:clearselection()
+			
+		end
 
 	-- Typeable chars
 	elseif GUI.clamp(32, GUI.char, 254) == GUI.char then
@@ -304,25 +304,6 @@ function GUI.TextEditor:ontype()
 		self:insertchar()
 		self:clearselection()
 	
-	
-	-- Non-typeable / navigation chars
-	elseif self.keys[GUI.char] then
-		
-		local shift = GUI.mouse.cap & 8 == 8
-		
-		if shift and not self.sel_s then 
-			self.sel_s = {x = self.caret.x, y = self.caret.y}
-		end
-		
-		self.keys[GUI.char](self)
-		
-		if shift and GUI.char ~= (GUI.chars.BACKSPACE) then
-			
-			self.sel_e = {x = self.caret.x, y = self.caret.y}
-			
-		else
-			self:clearselection()
-		end
 		
 	end
 	self:windowtocaret()
@@ -695,7 +676,7 @@ function GUI.TextEditor:wnd_recalc()
 	
 end
 
-
+--[[		Deprecated
 -- Handles clipboard shortcuts - Cut, Copy, Paste
 function GUI.TextEditor:clipboardkeys()
 	
@@ -726,7 +707,7 @@ function GUI.TextEditor:clipboardkeys()
 	end	
 
 end
-
+]]--
 
 -- Get the right edge of the window (in chars)
 function GUI.TextEditor:wnd_right()
@@ -888,6 +869,25 @@ function GUI.TextEditor:overscrollbar(x)
 end
 
 
+-- See if we have a new-enough version of SWS for the clipboard functions
+-- (v2.9.7 or greater)
+function GUI.TextEditor:SWS_clipboard()
+	
+	if GUI.SWS_exists then
+		return true
+	else
+	
+		reaper.ShowMessageBox(	"Clipboard functions require the SWS extension, v2.9.7 or newer."..
+									"\n\nDownload the latest version at http://www.sws-extension.org/index.php",
+									"Sorry!", 0)
+		return false
+	
+	end
+	
+end
+
+
+
 -- Non-typing key commands
 -- A table of functions is more efficient to access than using really
 -- long if/then/else structures.
@@ -1042,5 +1042,89 @@ GUI.TextEditor.keys = {
 		
 	end,
 
+	-- A -- Select All
+	[1] = function(self)
+		
+		if GUI.mouse.cap & 4 == 4 then
+			self:selectall()
+		else
+			self:insertchar()
+		end
+		
+		-- Flag to bypass the "clear selection" logic in :ontype()
+		return true
+		
+	end,
+	
+	-- C -- Copy
+	[3] = function(self)
+		
+		if GUI.mouse.cap & 4 == 4 then
+			
+			if self.sel_s and self:SWS_clipboard() then
+				
+				local str = self:getselection()
+				reaper.CF_SetClipboard(str)
+				
+			end
+			
+		else
+			self:insertchar()
+		end
+		
+		-- Flag to bypass the "clear selection" logic in :ontype()		
+		return true
+		
+	end,
+	
+	-- V -- Paste
+	[22] = function(self)
+		
+		if GUI.mouse.cap & 4 == 4 then
+	
+			if self:SWS_clipboard() then
+				
+				-- reaper.SNM_CreateFastString( str )
+				-- reaper.CF_GetClipboardBig( output )
+				local fast_str = reaper.SNM_CreateFastString("")
+				local str = reaper.CF_GetClipboardBig(fast_str)
+				reaper.SNM_DeleteFastString(fast_str)
+				
+				self:insertstring(str, true)
+
+			end
+			
+		else
+			self:insertchar()
+		end
+		
+		-- Flag to bypass the "clear selection" logic in :ontype()		
+		return true		
+		
+	end,
+	
+	-- X -- Cut
+	[24] = function(self)
+	
+		if GUI.mouse.cap & 4 == 4 then
+			
+			if self.sel_s and self:SWS_clipboard() then
+				
+				local str = self:getselection()
+				reaper.CF_SetClipboard(str)
+				self:deleteselection()
+				
+			end
+			
+		else
+			self:insertchar()
+		end
+		
+		-- Flag to bypass the "clear selection" logic in :ontype()		
+		return true		
+		
+	end,	
+	
+	
 }
 

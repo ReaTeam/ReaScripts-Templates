@@ -300,7 +300,7 @@ function GUI.TextEditor:ontype()
 
 
 	-- Typeable chars
-	elseif GUI.clamp(31, GUI.char, 127) == GUI.char then
+	elseif GUI.clamp(32, GUI.char, 254) == GUI.char then
 		
 		if self.sel_s then self:deleteselection() end
 		
@@ -944,7 +944,7 @@ GUI.TextEditor.keys = {
 		
 		if caret_off then
 			self.caret.y = self.wnd_pos.y + caret_off
-			self.caret.x = math.min(self.caret.x, #self.retval[self.caret.y])
+			self.caret.x = math.min(self.caret.x, string.len(self.retval[self.caret.y]))
 		end
 		
 	end,
@@ -953,11 +953,11 @@ GUI.TextEditor.keys = {
 
 		local caret_off = self.caret and (self.caret.y - self.wnd_pos.y)
 		
-		self.wnd_pos.y = math.min(#self.retval - self.wnd_h + 1, self.wnd_pos.y + self.wnd_h)
+		self.wnd_pos.y = GUI.clamp(1, #self.retval - self.wnd_h + 1, self.wnd_pos.y + self.wnd_h)
 
 		if caret_off then
 			self.caret.y = self.wnd_pos.y + caret_off
-			self.caret.x = math.min(self.caret.x, #self.retval[self.caret.y])
+			self.caret.x = math.min(self.caret.x, string.len(self.retval[self.caret.y]))
 		end
 		
 	end,

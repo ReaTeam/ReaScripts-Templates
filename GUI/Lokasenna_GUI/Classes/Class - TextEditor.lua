@@ -233,9 +233,6 @@ function GUI.TextEditor:onmousedown(scroll)
 			self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
 			self.sel_e = {x = self.caret.x, y = self.caret.y}
 	
-			GUI.Msg("s = "..tostring(self.sel_s.x)..", "..tostring(self.sel_s.y))
-			GUI.Msg("e = "..tostring(self.sel_e.x)..", "..tostring(self.sel_e.y))
-	
 	-- Place the caret
 	else
 	
@@ -320,7 +317,9 @@ function GUI.TextEditor:ontype()
 		self.keys[GUI.char](self)
 		
 		if shift and GUI.char ~= (GUI.chars.BACKSPACE) then
+			
 			self.sel_e = {x = self.caret.x, y = self.caret.y}
+			
 		else
 			self:clearselection()
 		end
@@ -722,7 +721,7 @@ function GUI.TextEditor:clipboardkeys()
 		local str = reaper.CF_GetClipboardBig(fast_str)
 		reaper.SNM_DeleteFastString(fast_str)
 		
-		self:insertstring(str)
+		self:insertstring(str, true)
 		
 	end	
 
@@ -822,7 +821,7 @@ end
 
 -- Insert a string at the caret, deleting any existing selection
 -- i.e. Paste
-function GUI.TextEditor:insertstring(str)
+function GUI.TextEditor:insertstring(str, move_caret)
 	
 	local sx, sy = 	(self.sel_s and self.sel_s.x or self.caret.x), 
 					(self.sel_s and self.sel_s.y or self.caret.y)
@@ -840,13 +839,19 @@ function GUI.TextEditor:insertstring(str)
 	if #tmp == 1 then
 		
 		self.retval[sy] = pre..tmp[1]..post
+		if move_caret then self.caret.x = self.caret.x + #tmp[1] end
 		
 	else				
 
 		self.retval[sy] = tostring(pre)..tmp[1]
 		table.insert(self.retval, sy + 1, tmp[#tmp]..tostring(post))
 		for i = 2, #tmp - 1 do
-			table.insert(self.retval, sy + 1, tmp[i])	
+			table.insert(self.retval, sy + 1, tmp[i])
+		end
+		
+		if move_caret then
+			self.caret = {	x =	string.len(tmp[#tmp]),
+							y =	self.caret.y + #tmp - 1}
 		end
 
 	end
@@ -912,15 +917,23 @@ GUI.TextEditor.keys = {
 	
 	[GUI.chars.UP] = function(self)
 		
-		self.caret.y = math.max(1, self.caret.y - 1)
-		self.caret.x = math.min(self.caret.x, self:carettoend() )
-	
+		if self.caret.y == 1 then
+			self.caret.x = 0	
+		else
+			self.caret.y = math.max(1, self.caret.y - 1)
+			self.caret.x = math.min(self.caret.x, self:carettoend() )
+		end
+		
 	end,
 	
 	[GUI.chars.DOWN] = function(self)
 		
-		self.caret.y = math.min(self.caret.y + 1, #self.retval)
-		self.caret.x = math.min(self.caret.x, self:carettoend() )
+		if self.caret.y == #self.retval then
+			self.caret.x = string.len(self.retval[#self.retval])
+		else
+			self.caret.y = math.min(self.caret.y + 1, #self.retval)
+			self.caret.x = math.min(self.caret.x, self:carettoend() )
+		end
 		
 	end,
 	

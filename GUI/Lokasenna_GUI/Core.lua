@@ -29,6 +29,44 @@ GUI.file_sep = string.match(reaper.GetOS(), "Win") and "\\" or "/"
 GUI.SWS_exists = reaper.APIExists("CF_GetClipboardBig")
 
 
+	---- Developer stuff ----
+
+-- Developer mode settings
+GUI.dev = {
+	
+	-- grid_a must be a multiple of grid_b, or it will
+	-- probably never be drawn
+	grid_a = 128,
+	grid_b = 16
+	
+}
+
+-- Draws a grid overlay and some developer hints
+GUI.draw_dev = function ()
+	
+	-- Draw a grid for placing elements
+	GUI.color("magenta")
+	gfx.setfont("Courier New", 12)
+	
+	for i = 0, GUI.w, GUI.dev.grid_b do
+		
+		local a = (i == 0) or (i % GUI.dev.grid_a == 0)
+		gfx.a = a and 1 or 0.3
+		gfx.line(i, 0, i, GUI.h)
+		gfx.line(0, i, GUI.w, i)
+		if a then
+			gfx.x, gfx.y = i + 4, 4
+			gfx.drawstr(i)
+			gfx.x, gfx.y = 4, i + 4
+			gfx.drawstr(i)
+		end	
+	
+	end
+	
+	gfx.a = 1
+	
+end
+
 
 
 	---- Keyboard constants ----
@@ -312,10 +350,7 @@ GUI.table_copy = function (source, base, depth)
 		
 		if type(v) == "table" then
 			
-			--_=dm and GUI.Msg(string.rep("\t", depth + 1)..tostring(k).." is a table; recursing...")
-			
 			if base then
-				--_=dm and GUI.Msg(string.rep("\t", depth).."base:\t"..tostring(k))
 				new[k] = GUI.table_copy(v, base[k], depth)
 			else
 				new[k] = GUI.table_copy(v, nil, depth)
@@ -323,16 +358,13 @@ GUI.table_copy = function (source, base, depth)
 			
 		else
 			if not base or (base and new[k] == nil) then 
-				--_=dm and GUI.Msg(string.rep("\t", depth).."added:\t"..tostring(k).." = "..tostring(v))		
+
 				new[k] = v
 			end
 		end
 		
-		--_=dm and GUI.Msg(string.rep("\t", depth).."done with "..tostring(k))
 	end
 	setmetatable(new, meta)
-	
-	--_=dm and GUI.Msg(string.rep("\t", depth).."finished copying")
 	
 	return new
 	
@@ -462,8 +494,6 @@ end
 
 GUI.init_txt_width = function ()
 
-	_=dm and GUI.Msg("init_txt_width")
-
 	GUI.txt_width = {}
 	local arr
 	for k in pairs(GUI.fonts) do
@@ -528,8 +558,6 @@ end
 				
 ]]--
 GUI.word_wrap = function (str, font, w, indent, pad)
-	
-	_=dm and GUI.Msg("word wrap:\n\tfont "..tostring(font).."\n\twidth "..tostring(w).."\n\tindent "..tostring(indent))
 	
 	if not GUI.txt_width then GUI.init_txt_width() end
 	
@@ -1211,7 +1239,13 @@ GUI.Main = function ()
 	end
 	
 	--	(Escape key)	(Window closed)		(User function says to close)
-	if GUI.char == 27 or GUI.char == -1 or GUI.quit == true then
+	--if GUI.char == 27 or GUI.char == -1 or GUI.quit == true then
+	if (GUI.char == 27 and not (	GUI.mouse.cap & 4 == 4 
+								or 	GUI.mouse.cap & 8 == 8 
+								or 	GUI.mouse.cap & 16 == 16))
+			or GUI.char == -1 
+			or GUI.quit == true then
+		
 		return 0
 	else
 		reaper.defer(GUI.Main)
@@ -1242,6 +1276,16 @@ GUI.Main = function ()
 	-- We'll use this to shorten each elm's update loop if the user did something
 	-- Slightly more efficient, and averts any bugs from false positives
 	GUI.elm_updated = false
+
+	-- Check for the dev mode toggle before we get too excited about updating elms
+	if GUI.char == 282 and GUI.mouse.cap & 4 ~= 0 and GUI.mouse.cap & 8 ~= 0 and GUI.mouse.cap & 16 ~= 0 then
+		
+		GUI.dev_mode = not GUI.dev_mode
+		GUI.elm_update = true
+		GUI.redraw_z[0] = true
+		
+	end	
+
 
 	for i = 0, GUI.z_max do
 		if GUI.elms_list[i] and #GUI.elms_list[i] > 0 and not (GUI.elms_hide[i] or GUI.elms_freeze[i]) then
@@ -1335,6 +1379,11 @@ GUI.Main = function ()
 				gfx.blit(i, 1, 0, 0, 0, w, h, 0, 0, w, h, 0, 0)
 			end
 		end
+		
+		-- Draw developer hints if necessary
+		if GUI.dev_mode then
+			GUI.draw_dev()
+		end		
 		GUI.Draw_Version()		
 		
 	end
@@ -1361,6 +1410,7 @@ GUI.Update = function (elm)
 	local inside = GUI.IsInside(elm, x, y)
 	
 	local skip = elm:onupdate() or false
+		
 	
 	if GUI.elm_updated then
 		if elm.focus then

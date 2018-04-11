@@ -909,13 +909,16 @@ end
 
 -- Split a string by line into a table
 function GUI.TextEditor:stringtotable(str)
-	
+
+	--local pattern = "([^\r\n]*)[\r\n]?"
+	local pattern = "([^\r\n]*)\r?\n?"
 	local tmp = {}
-	for line in string.gmatch(str, "([^\r\n]*)[\r\n]?") do
+	for line in string.gmatch(str, pattern) do
 		table.insert(tmp, line)
+		GUI.Msg(#tmp.."\t:"..tmp[#tmp])
 	end
 	
-	return tmp	
+	return tmp
 	
 end
 
@@ -948,7 +951,9 @@ function GUI.TextEditor:insertstring(str, move_caret)
 
 		self.retval[sy] = tostring(pre)..tmp[1]
 		table.insert(self.retval, sy + 1, tmp[#tmp]..tostring(post))
-		for i = 2, #tmp - 1 do
+		
+		-- Insert our paste lines backwards so sy+1 is always correct
+		for i = #tmp - 1, 2, -1 do
 			table.insert(self.retval, sy + 1, tmp[i])
 		end
 		

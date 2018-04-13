@@ -21,6 +21,7 @@ opts			Comma-separated string of options. As with gfx.showmenu, there are
 				
 Optional:
 pad				Padding between the label and the box
+noarrow         Boolean. Removes the arrow from the menubox.
 
 
 Additional:
@@ -62,7 +63,7 @@ end
 
 
 GUI.Menubox = GUI.Element:new()
-function GUI.Menubox:new(name, z, x, y, w, h, caption, opts)
+function GUI.Menubox:new(name, z, x, y, w, h, caption, opts, pad, noarrow)
 	
 	local menu = {}
 	
@@ -84,6 +85,7 @@ function GUI.Menubox:new(name, z, x, y, w, h, caption, opts)
 	menu.col_txt = "txt"
 	
 	menu.pad = pad or 4
+    menu.noarrow = noarrow or false
 	
 	-- Parse the string of options into a table
 	menu.optarray = {}
@@ -125,35 +127,38 @@ function GUI.Menubox:init()
 	
 	GUI.color("elm_frame")
 	gfx.rect(1, 1, w, h, 0)
-	gfx.rect(1 + w - h, 1, h, h, 1)
+	if not self.noarrow then gfx.rect(1 + w - h, 1, h, h, 1) end
 	
 	GUI.color("elm_fill")
 	gfx.rect(1, h + 3, w, h, 0)
 	gfx.rect(2, h + 4, w - 2, h - 2, 0)
-	gfx.rect(1 + w - h, h + 3, h, h, 1)
+    
+    if not self.noarrow then
+        gfx.rect(1 + w - h, h + 3, h, h, 1)
 	
-	GUI.color("elm_bg")
-	
-	-- Triangle size
-	local r = 5
-	local rh = 2 * r / 5
-	
-	local ox = (1 + w - h) + h / 2
-	local oy = 1 + h / 2 - (r / 2)
+        GUI.color("elm_bg")
+        
+        -- Triangle size
+        local r = 5
+        local rh = 2 * r / 5
+        
+        local ox = (1 + w - h) + h / 2
+        local oy = 1 + h / 2 - (r / 2)
 
-	local Ax, Ay = GUI.polar2cart(1/2, r, ox, oy)
-	local Bx, By = GUI.polar2cart(0, r, ox, oy)
-	local Cx, Cy = GUI.polar2cart(1, r, ox, oy)
-	
-	GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)
-	
-	oy = oy + h + 2
-	
-	Ax, Ay = GUI.polar2cart(1/2, r, ox, oy)
-	Bx, By = GUI.polar2cart(0, r, ox, oy)
-	Cx, Cy = GUI.polar2cart(1, r, ox, oy)	
-	
-	GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)	
+        local Ax, Ay = GUI.polar2cart(1/2, r, ox, oy)
+        local Bx, By = GUI.polar2cart(0, r, ox, oy)
+        local Cx, Cy = GUI.polar2cart(1, r, ox, oy)
+        
+        GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)
+        
+        oy = oy + h + 2
+        
+        Ax, Ay = GUI.polar2cart(1/2, r, ox, oy)
+        Bx, By = GUI.polar2cart(0, r, ox, oy)
+        Cx, Cy = GUI.polar2cart(1, r, ox, oy)	
+        
+        GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)	
+    end
 
 end
 
@@ -173,12 +178,16 @@ function GUI.Menubox:draw()
 	
 
 	-- Draw the caption
-	GUI.font(self.font_a)
-	local str_w, str_h = gfx.measurestr(caption)
-	gfx.x = x - str_w - self.pad
-	gfx.y = y + (h - str_h) / 2
-	GUI.text_bg(caption, self.bg)
-	GUI.shadow(caption, self.col_cap, "shadow")
+	if self.caption and self.caption ~= "" then
+		
+		GUI.font(self.font_a)
+		local str_w, str_h = gfx.measurestr(caption)
+		gfx.x = x - str_w - self.pad
+		gfx.y = y + (h - str_h) / 2
+		GUI.text_bg(caption, self.bg)
+		GUI.shadow(caption, self.col_cap, "shadow")
+		
+	end
 	
 	for i = 1, GUI.shadow_dist do
 		gfx.blit(self.buff, 1, 0, w + 2, 0, w + 2, h + 2, x + i - 1, y + i - 1)	
@@ -187,43 +196,6 @@ function GUI.Menubox:draw()
 	
 	gfx.blit(self.buff, 1, 0, 0, (focus and (h + 2) or 0) , w + 2, h + 2, x - 1, y - 1) 	
 	
-	
-	--[[
-	-- Draw the frame background
-	GUI.color("elm_bg")
-	gfx.rect(x, y, w, h, 1)
-	
-	
-	-- Draw the frame, and make it brighter if focused.
-	if focus then 
-				
-		GUI.color("elm_fill")
-		gfx.rect(x + 1, y + 1, w - 2, h - 2, 0)
-		
-	else
-	
-		GUI.color("elm_frame")
-	end
-
-	gfx.rect(x, y, w, h, 0)
-
-	-- Draw the dropdown indicator
-	gfx.rect(x + w - h, y, h, h, 1)
-	GUI.color("elm_bg")
-	
-	-- Triangle size
-	local r = 6
-	local rh = 2 * r / 5
-	
-	local ox = (x + w - h) + h / 2
-	local oy = y + h / 2 - (r / 2)
-
-	local Ax, Ay = GUI.polar2cart(1/2, r, ox, oy)
-	local Bx, By = GUI.polar2cart(0, r, ox, oy)
-	local Cx, Cy = GUI.polar2cart(1, r, ox, oy)
-	
-	GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)
-	]]--
 
 	-- Draw the text
 	GUI.font(self.font_b)

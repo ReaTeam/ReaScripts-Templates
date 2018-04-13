@@ -28,6 +28,9 @@ focus			Whether the text editor is "in focus" or not, allowing users to type.
 				This setting is automatically updated, so you shouldn't need to
 				change it yourself in most cases.
 				
+undo_limit		How many undo states can be stored before the first is erased.
+				Defaults to 20.
+				
 
 Extra methods:
 
@@ -89,6 +92,8 @@ function GUI.TextEditor:new(name, z, x, y, w, h, text, caption, pad)
 	txt.char_h, txt.wnd_h, txt.wnd_w, txt.char_w = nil, nil, nil, nil
 
 	txt.focus = false
+	
+	txt.undo_limit = 20
 		
 	setmetatable(txt, self)
 	self.__index = self
@@ -910,12 +915,10 @@ end
 -- Split a string by line into a table
 function GUI.TextEditor:stringtotable(str)
 
-	--local pattern = "([^\r\n]*)[\r\n]?"
 	local pattern = "([^\r\n]*)\r?\n?"
 	local tmp = {}
 	for line in string.gmatch(str, pattern) do
 		table.insert(tmp, line)
-		GUI.Msg(#tmp.."\t:"..tmp[#tmp])
 	end
 	
 	return tmp
@@ -976,7 +979,7 @@ function GUI.TextEditor:insertchar(char)
 	local a, b = str:sub(1, self.caret.x), str:sub(self.caret.x + (self.insert_caret and 2 or 1))
 	self.retval[self.caret.y] = a..string.char(char)..b
 	self.caret.x = self.caret.x + 1
-	
+    	
 end
 
 
@@ -1077,7 +1080,6 @@ GUI.TextEditor.keys = {
 		
 	end,
 	
-	
 	[GUI.chars.BACKSPACE] = function(self)
 	
 		self:setundostate()		
@@ -1105,6 +1107,13 @@ GUI.TextEditor.keys = {
 		end
 		
 	end,
+	
+	[GUI.chars.TAB] = function(self)
+		
+		self:insertchar(9)
+		
+	end,
+	
 	
 	[GUI.chars.INSERT] = function(self)
 		
@@ -1300,7 +1309,7 @@ end
 function GUI.TextEditor:setundostate()
 
 	table.insert(self.undo_states, self:geteditorstate() )
-	if #self.undo_states > 10 then table.remove(self.undo_states, 1) end
+	if #self.undo_states > self.undo_limit then table.remove(self.undo_states, 1) end
 	self.redo_states = {}
 
 end

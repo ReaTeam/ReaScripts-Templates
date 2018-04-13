@@ -76,6 +76,7 @@ GUI.chars = {
 	ESCAPE		= 27,
 	SPACE		= 32,
 	BACKSPACE	= 8,
+	TAB			= 9,
 	HOME		= 1752132965,
 	END			= 6647396,
 	INSERT		= 6909555,
@@ -1711,6 +1712,11 @@ GUI.New = function (name, elm, ...)
 	
 	GUI.elms[name] = GUI[elm]:new(name, ...)
 	if GUI.gfx_open then GUI.elms[name]:init() end
+    
+    -- Return this so (I think) a bunch of new elements could be created
+    -- within a table that would end up holding their names for easy bulk
+    -- processing.
+    return name
 	
 end
 

@@ -99,7 +99,7 @@ espresso machine... all sorts of stuff.
 
 - There are several Example scripts included with the library - these can be 
 run in Reaper, and demonstrate some of the typical things a script GUI might 
-need to do. 
+need to do as well as a few of the niftier tricks I've picked up along the way.
 
 - See 'READ ME - Building classes.txt' for details on how to, duh, build your
 own classes.

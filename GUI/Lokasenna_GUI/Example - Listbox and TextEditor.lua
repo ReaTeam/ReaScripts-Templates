@@ -45,6 +45,13 @@ req("Classes/Class - TextEditor.lua")()
 if missing_lib then return 0 end
 
 
+
+
+------------------------------------
+-------- Data + functions ----------
+------------------------------------
+
+
 local items = {
 	
 	{"Pride and Prejudice", 
@@ -106,6 +113,10 @@ before you, so that her skirt slips up to the tops of her stockings?]]}
 
 }
 
+local titles = {}
+for i = 1, #items do
+	titles[i] = items[i][1]
+end
 
 
 local function add_text()
@@ -135,17 +146,21 @@ local function add_text()
 	
 end
 
+
+
+------------------------------------
+-------- GUI Stuff -----------------
+------------------------------------
+
 GUI.name = "Example - Listbox and TextEditor"
 GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 800, 240
 GUI.anchor, GUI.corner = "mouse", "C"
 
 --[[	
 
-		Classes and parameters
-	
-	Button		name, 	z, 	x, 	y, 	w, 	h, caption, func[, ...]
-	Listbox		name, 	z, 	x, 	y, 	w, 	h[, list, multi, caption, pad])
-	TextEditor	name,	z,	x,	y,	w,	h[, text, caption, pad])
+	Button		z, 	x, 	y, 	w, 	h, caption, func[, ...]
+	Listbox		z, 	x, 	y, 	w, 	h[, list, multi, caption, pad])
+	TextEditor	z,	x,	y,	w,	h[, text, caption, pad])
 	
 ]]--
 
@@ -154,10 +169,7 @@ GUI.New("lst_titles", "Listbox",	1,	16,  16,  300, 208, "", true)
 GUI.New("btn_go", "Button",			1,	324, 96, 32,  24, "-->", add_text) 
 GUI.New("txted_text", "TextEditor",	1,	364, 16,  420, 208, "Select an item\nor two\nor three\nor everything\n\nin the list and click the button!")
 
-local titles = {}
-for i = 1, #items do
-	titles[i] = items[i][1]
-end
+
 GUI.Val("lst_titles", titles)
 
 

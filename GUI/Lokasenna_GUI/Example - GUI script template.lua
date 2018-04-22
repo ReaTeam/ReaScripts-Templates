@@ -37,21 +37,21 @@ end
 -- when they look for functions that aren't there.
 req("Core.lua")()
 
-req("Classes/Class - Label.lua")()
-req("Classes/Class - Knob.lua")()
-req("Classes/Class - Tabs.lua")()
 req("Classes/Class - Slider.lua")()
 req("Classes/Class - Button.lua")()
 req("Classes/Class - Menubox.lua")()
 req("Classes/Class - Checklist.lua")()
-req("Classes/Class - Radio.lua")()
-req("Classes/Class - Textbox.lua")()
-req("Classes/Class - Frame.lua")()
-req("Classes/Class - Listbox.lua")()
-req("Classes/Class - TextEditor.lua")()
+
 
 -- If any of the requested libraries weren't found, abort the script.
 if missing_lib then return 0 end
+
+
+
+
+------------------------------------
+-------- GUI Stuff -----------------
+------------------------------------
 
 
 GUI.name = "Example - Script template"
@@ -60,34 +60,10 @@ GUI.anchor, GUI.corner = "mouse", "C"
 
 --[[	
 
-	New elements are created by:
-	
-	GUI.New(name, class, params)
-	
-	and can then have their parameters accessed via:
-	
-	GUI.elms.name.param
-	
-	ex:
-	
-	GUI.New("my_new_label", "Label", 1, 32, 32, "This is my label")
-	GUI.elms.my_new_label.color = "magenta"
-	GUI.elms.my_new_label.font = 1
-	
-	
-		Classes and parameters
-	
-	Button		name, 	z, 	x, 	y, 	w, 	h, caption, func[, ...]
-	Checklist	name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Frame		name, 	z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
-	Knob		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, default[, vals]	
-	Label		name, 	z, 	x, 	y,		caption[, shadow, font, color, bg]
-	Menubox		name, 	z, 	x, 	y, 	w, 	h, caption, opts
-	Radio		name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
-	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
-	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-	Listbox		name, 	z, 	x, 	y, 	w, 	h, list[, multi, shadow]
+	Button		z, 	x, 	y, 	w, 	h, caption, func[, ...]
+	Checklist	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
+	Menubox		z, 	x, 	y, 	w, 	h, caption, opts[, pad, noarrow]
+	Slider		z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
 	
 ]]--
 

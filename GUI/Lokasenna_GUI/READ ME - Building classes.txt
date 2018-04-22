@@ -26,6 +26,9 @@ a Person we can look and see that people do not, in fact, have wings.
 (If you'd like a more detailed description of this behavior, do a Google
 search for "lua classes metatables" and try not to fall asleep.)
 
+
+
+
 For our purposes, your class just needs to reference GUI.Element like so:
 	
 	GUI.Thing = GUI.Element:new()
@@ -38,7 +41,10 @@ perform. i.e.
 
 	Person:walk(2 feet, east)
 	Person:sleep(4 hours)
-	
+
+
+
+
 The first method a class needs is a way to store all of its parameters, and
 for it know that it is, in fact, part of a class:
 
@@ -63,8 +69,19 @@ for it know that it is, in fact, part of a class:
 	
 	end
 	
-(I can't offer a good explanation for that last part, unfortunately. Just
-know that it works, and it lets you make elements that are Things.)
+That last bit tells our temporary Thing to use 'self' as a backup if it 
+can't find a value or method. Because this function uses a : up top, 'self' 
+is included as a hidden variable referring to whatever called it.
+                                
+    i.e. GUI.Thing:new()..... 'self' refers to GUI.Thing
+
+By giving the temporary Thing instructions to look up GUI.Thing, we've 
+created a new, independent copy of our base class. It can be modified, told 
+to do stuff, even rewritten, and other Things won't be affected. If any of 
+them are asked for a value they don't have, they'll look at their class for 
+an answer.
+
+
 
 Many elements will want to do a bit of prep work when first created, such
 as getting a buffer and drawing themselves to it for blitting later. The
@@ -104,16 +121,58 @@ this case, you would assign the buffer to the class as a whole:
 Because of the metatable stuff, an element looking for 'self.buffer' will 
 come up blank and go looking to see if GUI.Thing.buffer exists.
 
+
+
+
 Classes probably need to be able to draw themselves, right? This method is
 called any time the element's z layer is asked to redraw.
 
 	function GUI.Thing:draw()
 	
 		gfx.rect(self.x, self.y, self.w, self.h)
+        
 		gfx.x, gfx.y = self.x, self.y
 		gfx.drawstr(self.caption)		
 	
 	end
+
+If your class made use of a buffer to pre-draw a few things, you instead have
+to copy ('blit' being the computer term) the buffer's contents (or simply part 
+of it) to the main drawing area.
+
+    function GUI.Thing:draw()
+
+        gfx.blit(self.buff[1], 1, 0)
+        gfx.blit(self.buff[2], 1, 0)        
+        
+ 		gfx.x, gfx.y = self.x, self.y
+		gfx.drawstr(self.caption)       
+    end
+
+
+
+
+It's also perfectly fine to use a combination of blitting and drawing - most 
+of the GUI classes here do. The Slider class, for instance:
+
+:init()
+- Draws the background track to self.buffs[1]
+- Draws a single slider handle to self.buffs[2]
+
+:draw()
+- Blits the background track
+- Draws the green 'fill' in
+- Blits a copy of the original handle for each handle on the slider
+- Draws the text values next to them
+
+(I apologize if the Slider class has been updated at some point and no longer
+works that way by the time you read this)
+
+There are more complicated ways to use blitting such as scaling, rotation,
+cropping, and different blending modes. See the ReaScript API's gfx functions.
+
+
+
 
 Most classes will also need a way to return their value, or have a new value
 assigned to them. In some cases this can be done directly, like so:
@@ -146,6 +205,9 @@ All elements' :val() methods can be accessed via GUI.Val():
 	-- Set a new one
 	GUI.Val("my_thing", 12)
 
+
+
+
 Another thing most classes might need is a way to respond to the user's input.
 We'll use :onclick as an example.
 
@@ -164,6 +226,9 @@ Note the last line there, and remember that elements are only redrawn if their
 z layer is told to redraw. If the method didn't include that line, the new
 caption would never be displayed because the GUI would just keep blitting the
 previous copy.
+
+
+
 
 Classes are by no means limited to these methods. I think GUI.Thing:new()
 is the only one that might cause problems in its absence, and you can also add

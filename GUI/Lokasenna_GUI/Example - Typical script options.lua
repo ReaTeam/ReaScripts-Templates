@@ -47,9 +47,10 @@ if missing_lib then return 0 end
 
 
 
-GUI.name = "Example - Typical script options"
-GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 400, 200
-GUI.anchor, GUI.corner = "mouse", "C"
+
+------------------------------------
+-------- Data + functions ----------
+------------------------------------
 
 
 local function btn_click()
@@ -80,36 +81,25 @@ local function btn_click()
 	
 end
 
+
+
+
+------------------------------------
+-------- GUI Stuff -----------------
+------------------------------------
+
+
+GUI.name = "Example - Typical script options"
+GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 400, 200
+GUI.anchor, GUI.corner = "mouse", "C"
+
+
 --[[	
 
-	New elements are created by:
-	
-	GUI.New(name, class, params)
-	
-	and can then have their parameters accessed via:
-	
-	GUI.elms.name.param
-	
-	ex:
-	
-	GUI.New("my_new_label", "Label", 1, 32, 32, "This is my label")
-	GUI.elms.my_new_label.color = "magenta"
-	GUI.elms.my_new_label.font = 1
-	
-	
-		Classes and parameters
-	
-	Button		name, 	z, 	x, 	y, 	w, 	h, caption, func[, ...]
-	Checklist	name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Frame		name, 	z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
-	Knob		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, default[, vals]	
-	Label		name, 	z, 	x, 	y,		caption[, shadow, font, color, bg]
-	Menubox		name, 	z, 	x, 	y, 	w, 	h, caption, opts
-	Radio		name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
-	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
-	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-
+	Button		z, 	x, 	y, 	w, 	h, caption, func[, ...]
+	Checklist	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
+	Menubox		z, 	x, 	y, 	w, 	h, caption, opts, pad, noarrow]
+	Slider		z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
 	
 ]]--
 
@@ -117,6 +107,7 @@ GUI.New("mnu_mode",	"Menubox",		1, 64,	32,  72, 20, "Mode:", "Auto,Punch,Step")
 GUI.New("chk_opts",	"Checklist",	1, 192,	32,  192, 96, "Options", "Only in time selection,Only on selected track,Glue items when finished", "v", 4)
 GUI.New("sldr_thresh", "Slider",	1, 32,  96, 128, "Threshold", -60, 0, 60, 48, "h")
 GUI.New("btn_go",	"Button",		1, 168, 152, 64, 24, "Go!", btn_click)
+
 
 GUI.Init()
 GUI.Main()

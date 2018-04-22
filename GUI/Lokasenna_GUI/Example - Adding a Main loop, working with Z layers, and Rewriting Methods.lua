@@ -39,9 +39,6 @@ end
 -- when they look for functions that aren't there.
 req("Core.lua")()
 
--- For better cross-platform behavior.
-local sep = GUI.file_sep
-
 req("Classes/Class - Label.lua")()
 req("Classes/Class - Slider.lua")()
 req("Classes/Class - Frame.lua")()
@@ -50,56 +47,15 @@ req("Classes/Class - Frame.lua")()
 if missing_lib then return 0 end
 
 
-GUI.name = "Example - Main, Z, and Methods"
-GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 300, 128
-GUI.anchor, GUI.corner = "mouse", "C"
+
+
+------------------------------------
+-------- Data + functions ----------
+------------------------------------
 
 
 -- Pre-declaring this so every function has access to it
 local tr
-
-
---[[	
-
-	New elements are created by:
-	
-	GUI.New(name, class, params)
-	
-	and can then have their parameters accessed via:
-	
-	GUI.elms.name.param
-	
-	ex:
-	
-	GUI.New("my_new_label", "Label", 1, 32, 32, "This is my label")
-	GUI.elms.my_new_label.color = "magenta"
-	GUI.elms.my_new_label.font = 1
-	
-	
-		Classes and parameters
-	
-	Button		name, 	z, 	x, 	y, 	w, 	h, caption, func[, ...]
-	Checklist	name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Frame		name, 	z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
-	Knob		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, default[, vals]	
-	Label		name, 	z, 	x, 	y,		caption[, shadow, font, color, bg]
-	Menubox		name, 	z, 	x, 	y, 	w, 	h, caption, opts
-	Radio		name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
-	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
-	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-	Listbox		name, 	z, 	x, 	y, 	w, 	h, list[, multi, shadow]
-	
-]]--
-
-GUI.New("lbl_track", "Label",	1,	96, 8, "No track selected!", true, 2, "red")
-GUI.New("frm_track", "Frame",	2,	0, 0, 300, 128, false, true, "faded", 0)
-GUI.New("sldr_pan", "Slider",	3,	88, 64, 128, "First selected track's Pan:", -100, 100, 200, 100, "h")
-
--- Layer 5 will never be shown or updated
--- (See the Main function below)
-GUI.elms_hide[5] = true
-
 
 
 local function update_pan()
@@ -109,20 +65,55 @@ local function update_pan()
 end
 
 
+
+
+------------------------------------
+-------- GUI Stuff -----------------
+------------------------------------
+
+
+GUI.name = "Example - Main, Z, and Methods"
+GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 300, 128
+GUI.anchor, GUI.corner = "mouse", "C"
+
+--[[	
+
+	Frame		z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
+	Label		z, 	x, 	y,		caption[, shadow, font, color, bg]
+	Slider		z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
+	
+]]--
+
+GUI.New("lbl_track", "Label",	1,	96, 8, "No track selected!", true, 2, "red")
+GUI.New("frm_track", "Frame",	2,	0, 0, 300, 128, false, true, "faded", 0)
+GUI.New("sldr_pan", "Slider",	3,	88, 64, 128, "First selected track's Pan:", -100, 100, 200, 100, "h")
+
+
+-- Layer 5 will never be shown or updated
+-- (See the Main function below)
+GUI.elms_hide[5] = true
+
+
+
+
+------------------------------------
+-------- Method overrides ----------
+------------------------------------
+
+
 -- Class methods can be overwritten, either at the class level or
 -- for individual elements.
 
--- You can also easily add your own code to methods:
-
--- Needs to be global, since GUI already exists
+-- You can also easily append your own code to the stock methods:
 function GUI.elms.sldr_pan:onmousedown()
 	
 	-- Run the slider's normal method
-	
+	GUI.Slider.onmousedown(self)
+
 	-- Note that we have to call the method as a function here; we
 	-- can't use the : syntax because sldr_pan's 'self' needs to be
 	-- passed on as a value. If we used a :, it would pass GUI.Slider
-	GUI.Slider.onmousedown(self)
+
 	update_pan()
 	
 end
@@ -139,6 +130,12 @@ function GUI.elms.sldr_pan:ondoubleclick()
 	update_pan()
 end
 
+
+
+
+------------------------------------
+-------- Main loop -----------------
+------------------------------------
 
 
 -- This will be run on every update loop of the GUI script; anything you would put
@@ -193,8 +190,10 @@ local function Main()
 			
 			GUI.Val("sldr_pan", pan )
 			
-		end		
-		
+		end	
+	
+	-- If we don't have a track, hide the track elements
+    -- and pop up a warning
 	else
 	
 		if GUI.elms.lbl_track.z == 5 then
@@ -211,6 +210,7 @@ local function Main()
 	
 	
 end
+
 
 GUI.Init()
 

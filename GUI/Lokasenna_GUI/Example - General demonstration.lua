@@ -53,14 +53,14 @@ req("Classes/Class - Frame.lua")()
 if missing_lib then return 0 end
 
 
-GUI.name = "New Window"
-GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 432, 500
-GUI.anchor, GUI.corner = "mouse", "C"
+
+
+------------------------------------
+-------- Data + functions ----------
+------------------------------------
 
 
 local function btn_click()
-	
-	--reaper.ShowMessageBox("Yay, you clicked a button. Now what?", "<(^^<)", 0)
 	
 	local tab_num = GUI.Val("tabs")
 	Msg("Displaying values for tab "..tostring(tab_num))
@@ -90,42 +90,53 @@ local function btn_click()
 	
 end
 
+
+local function fade_lbl()
+   
+    -- Fade out the label above
+    if GUI.elms.my_lbl.z == 3 then
+        GUI.elms.my_lbl:fade(1, 3, 6)
+        
+    -- Bring it back
+    else
+        GUI.elms.my_lbl:fade(1, 3, 6, -3)
+    end
+    
+end
+
+
+
+
+------------------------------------
+-------- GUI Stuff -----------------
+------------------------------------
+
+
+GUI.name = "New Window"
+GUI.x, GUI.y, GUI.w, GUI.h = 0, 0, 432, 500
+GUI.anchor, GUI.corner = "mouse", "C"
+
+
 --[[	
 
-	New elements are created by:
-	
-	GUI.New(name, class, params)
-	
-	and can then have their parameters accessed via:
-	
-	GUI.elms.name.param
-	
-	ex:
-	
-	GUI.New("my_new_label", "Label", 1, 32, 32, "This is my label")
-	GUI.elms.my_new_label.color = "magenta"
-	GUI.elms.my_new_label.font = 1
-	
-	
-		Classes and parameters
-	
-	Button		name, 	z, 	x, 	y, 	w, 	h, caption, func[, ...]
-	Checklist	name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Frame		name, 	z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
-	Knob		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, default[, vals]	
-	Label		name, 	z, 	x, 	y,		caption[, shadow, font, color, bg]
-	Menubox		name, 	z, 	x, 	y, 	w, 	h, caption, opts
-	Radio		name, 	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
-	Slider		name, 	z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
-	Tabs		name, 	z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
-	Textbox		name, 	z, 	x, 	y, 	w, 	h[, caption, pad]
-	Listbox		name, 	z, 	x, 	y, 	w, 	h, list[, multi, shadow]
+	Button		z, 	x, 	y, 	w, 	h, caption, func[, ...]
+	Checklist	z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
+	Frame		z, 	x, 	y, 	w, 	h[, shadow, fill, color, round]
+	Knob		z, 	x, 	y, 	w, 	caption, min, max, steps, default[, vals]	
+	Label		z, 	x, 	y,		caption[, shadow, font, color, bg]
+	Menubox		z, 	x, 	y, 	w, 	h, caption, opts
+	Radio		z, 	x, 	y, 	w, 	h, caption, opts[, dir, pad]
+	Slider		z, 	x, 	y, 	w, 	caption, min, max, steps, handles[, dir]
+	Tabs		z, 	x, 	y, 		tab_w, tab_h, opts[, pad]
+	Textbox		z, 	x, 	y, 	w, 	h[, caption, pad]
 	
 ]]--
 
 
-GUI.New("tabs", 	"Tabs", 		1, 0, 0, 64, 20, "Tab 1,Tab 2,Tab 3", 16)
-GUI.New("tab_bg",	"Frame",		2, 0, 0, 448, 20, true, true, "elm_bg", 0)
+GUI.New("tabs", 	"Tabs", 		1, 0, 0, 64, 20, "Stuff,Sliders,Options", 16)
+GUI.New("tab_bg",	"Frame",		2, 0, 0, 448, 20, false, true, "elm_bg", 0)
+GUI.New("my_btn", 	"Button", 		1, 168, 28, 96, 20, "Go!", btn_click)
+GUI.New("btn_frm",	"Frame",		1, 0, 56, GUI.w, 4, true, true)
 
 -- Telling the tabs which z layers to display
 -- See Classes/Tabs.lua for more detail
@@ -141,11 +152,16 @@ GUI.elms.tabs:update_sets(
 -- Notice that layers 1 and 2 aren't assigned to a tab; this leaves them visible
 -- all the time.
 
-GUI.New("my_btn", 	"Button", 		1, 168, 28, 96, 20, "Go!", btn_click)
-GUI.New("btn_frm",	"Frame",		1, 0, 56, GUI.w, 4, true, true)
+
+
 
 GUI.New("my_lbl", 	"Label", 		3, 256, 96, "Label!", true, 1)
 GUI.New("my_knob", 	"Knob", 		3, 64, 112, 64, "Volume", 0, 11, 12, 12, 1)
+GUI.New("my_mnu", 	"Menubox", 		3, 256, 176, 64, 20, "Options:", "1,2,3,4,5,6.12435213613")
+GUI.New("my_btn2",  "Button",       3, 256, 256, 64, 20, "Click me!", fade_lbl)
+GUI.New("my_txt", 	"Textbox", 		3, 96, 224, 96, 20, "Text:", 4)
+GUI.New("my_frm", 	"Frame", 		3, 16, 288, 192, 128, true, false, "elm_frame", 4)
+
 
 -- Adding a suffix to the knob's values
 GUI.elms.my_knob.output = function(val)
@@ -154,14 +170,17 @@ GUI.elms.my_knob.output = function(val)
 	
 end
 
-GUI.New("my_mnu", 	"Menubox", 		3, 256, 176, 64, 20, "Options:", "1,2,3,4,5,6")
-GUI.New("my_txt", 	"Textbox", 		3, 96, 224, 96, 20, "Text:", 4)
-GUI.New("my_frm", 	"Frame", 		3, 16, 288, 192, 128, true, true, "elm_bg", 4)
-GUI.elms.my_frm.text = "this is a really long string of text with no carriage returns so hopefully it will be wrapped correctly to fit inside this frame"
+GUI.Val("my_frm",   "this is a really long string of text with no carriage returns so hopefully"..
+                    "it will be wrapped correctly to fit inside this frame")
+GUI.elms.my_frm.bg = "elm_bg"
+
+
+
 
 GUI.New("my_rng", 	"Slider", 		4, 32, 128, 256, "Sliders", 0, 30, 30, {5, 10, 15, 20, 25})
 GUI.New("my_sldr", 	"Slider",		4, 32, 192, 256, "Slider", 0, 30, 30, 15)
-GUI.New("my_pan", 		"Slider", 		4, 32, 256, 256, "Pan", -100, 100, 200, 100)
+GUI.New("my_pan", 	"Slider", 		4, 32, 256, 256, "Pan", -100, 100, 200, 100)
+GUI.New("my_rng2", 	"Slider",		4, 352, 96, 256, "Vertical?", 0, 30, 30, {5, 10, 15, 20, 25}, "v")
 
 -- Using a function to change the value label depending on the value
 GUI.elms.my_pan.output = function(val)
@@ -175,13 +194,23 @@ GUI.elms.my_pan.output = function(val)
 	
 end
 
-GUI.New("my_rng2", 	"Slider",		4, 352, 96, 256, "Vertical?", 0, 30, 30, {5, 10, 15, 20, 25}, "v")
+
+
 
 GUI.New("my_chk", 	"Checklist", 	5, 32, 96, 160, 160, "Checklist:", "Alice,Bob,Charlie,Denise,Edward", "v", 4)
 GUI.New("my_opt", 	"Radio", 		5, 200, 96, 160, 160, "Options:", "Apples,Bananas,Cherries,Donuts,Eggplant", "v", 4)
 GUI.New("my_chk2",	"Checklist",	5, 32, 280, 384, 64, "Whoa, another Checklist", "N,NE,E,SE,S,SW,W,NW", "h", 4)
 GUI.New("my_opt2",	"Radio",		5, 32, 364, 384, 64, "Horizontal options", "A,A#,B,C,C#,D,D#,E,F,F#,G,G#", "h", 4)
 
+GUI.elms.my_opt.swap = true
+GUI.elms.my_chk2.swap = true
+
+
+
+
+------------------------------------
+-------- Main function -------------
+------------------------------------
 
 
 -- This will be run on every update loop of the GUI script; anything you would put

@@ -113,8 +113,7 @@ function GUI.Button:draw()
 	
 	local x, y, w, h = self.x, self.y, self.w, self.h
 	local state = self.state
-		
-	
+
 	-- Draw the shadow if not pressed
 	if state == 0 then
 		
@@ -133,8 +132,8 @@ function GUI.Button:draw()
 	GUI.font(self.font)	
 	
 	local str_w, str_h = gfx.measurestr(self.caption)
-	gfx.x = x + 2 * state + ((w - str_w) / 2)-- - 2
-	gfx.y = y + 2 * state + ((h - str_h) / 2)-- - 2
+	gfx.x = x + 2 * state + ((w - str_w) / 2)
+	gfx.y = y + 2 * state + ((h - str_h) / 2)
 	gfx.drawstr(self.caption)
 	
 end

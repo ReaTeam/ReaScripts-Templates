@@ -74,18 +74,23 @@ function GUI.Radio:new(name, z, x, y, w, h, caption, opts, dir, pad)
 	radio.x, radio.y, radio.w, radio.h = x, y, w, h
 
 	radio.caption = caption
+
+	radio.frame = true
+	radio.bg = "wnd_bg"
+    
+	radio.dir = dir or "v"
+	radio.pad = pad or 4
+        
 	radio.col_txt = "txt"
 	radio.col_fill = "elm_fill"
-	radio.bg = "wnd_bg"
-	
-	radio.frame = true
 
 	radio.font_a = 2
 	radio.font_b = 3
 	
-	radio.dir = dir
-	radio.pad = pad
+	radio.shadow = true
 	
+    radio.swap = false
+    
 	-- Size of the option bubbles
 	radio.radius = 10
 	
@@ -96,9 +101,7 @@ function GUI.Radio:new(name, z, x, y, w, h, caption, opts, dir, pad)
 		radio.optarray[tempidx] = word
 		tempidx = tempidx + 1
 	end
-	
-	radio.shadow = true
-	
+		
 	-- Currently-selected option
 	radio.retval, radio.state = 1, 1
 	
@@ -145,127 +148,15 @@ end
 -- Radio - Draw.
 function GUI.Radio:draw()
 	
-	
-	local x, y, w, h = self.x, self.y, self.w, self.h
-	local r = self.radius
-
-	local dir = self.dir
-	local pad = self.pad
-	
-	-- Draw the element frame
 	if self.frame then
 		GUI.color("elm_frame")
-		gfx.rect(x, y, w, h, 0)
+		gfx.rect(self.x, self.y, self.w, self.h, 0)
 	end
 
-	-- Draw the caption
+    if self.caption and self.caption ~= "" then self:drawcaption() end
 
-	if self.caption ~= "" then
-		GUI.font(self.font_a)
-		
-		gfx.x = self.cap_x
-		gfx.y = y - self.cap_h
-		
-		GUI.text_bg(self.caption, self.bg)
-		
-		GUI.shadow(self.caption, self.col_txt, "shadow")
-		
-		y = y + self.cap_h + pad		
-	end
-	
-	GUI.font(self.font_b)
+    self:drawoptions()
 
-	-- Draw the options
-	--local optheight = (h - self.capheight - 2 * pad) / #self.optarray
-	--[[
-	local optheight = 2*r + pad
-	local cur_y = y + self.cap_h + pad
-	
-	for i = 1, #self.optarray do	
-	--gfx.blit(source, scale, rotation[, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs] )	
-		gfx.blit(self.buff, 1, 0, ( i == self.state and (2*r + 2) or 0 ), 0, 2*r + 2, 2*r + 2, x + r, cur_y)
-		
-		
-		-- Labels
-		--GUI.color("txt")
-		local str = self.optarray[i]
-		local str_w, str_h = gfx.measurestr(str)
-		
-		gfx.x = x + 4 * r
-		gfx.y = cur_y + (optheight - str_h) / 2
-		
-		GUI.text_bg(str, self.bg)
-		
-		if self.shadow then
-			GUI.shadow(str, self.col_txt, "shadow")
-		else
-			GUI.color(self.col_xt)
-			gfx.drawstr(str)
-		end
-		
-		cur_y = cur_y + optheight
-
-		
-	end
-	]]--
-	
-	local size = 2*r
-	x, y = x + 0.5*pad, y + 0.5*pad
-	if dir == "h" and self.caption ~= "" and not self.swap then y = y + self.cap_h + 2*pad end
-	local x_adj, y_adj = table.unpack(dir == "h" and { (size + pad), 0 } or { 0, (size + pad) } )
-
-	for i = 1, #self.optarray do
-	
-		local str = self.optarray[i]
-		
-		if str ~= "__" then
-		
-			local opt_x, opt_y = x + (i - 1) * x_adj, y + (i - 1) * y_adj
-			
-			-- Draw the option frame
-			--GUI.color("elm_frame")
-			--gfx.rect(opt_x, opt_y, size, size, 0)
-			gfx.blit(self.buff, 1, 0, 1, 1, size + 1, size + 1, opt_x, opt_y)
-					
-			-- Fill in if selected
-			if self.state == i then
-				
-				--GUI.color(f_color)
-				--gfx.rect(opt_x + size * 0.25, opt_y + size * 0.25, size / 2, size / 2, 1)
-				gfx.blit(self.buff, 1, 0, size + 3, 1, size, size, opt_x, opt_y)
-			
-			end
-		
-			
-			local str_w, str_h = gfx.measurestr(self.optarray[i])
-			local swap = self.swap
-			
-			if dir == "h" then
-				if not swap then
-					gfx.x, gfx.y = opt_x + (size - str_w) / 2, opt_y - size
-				else
-					gfx.x, gfx.y = opt_x + (size - str_w) / 2, opt_y + size + 4
-				end
-			else
-				if not swap then
-					gfx.x, gfx.y = opt_x + 1.5 * size, opt_y + (size - str_h) / 2
-				else
-					gfx.x, gfx.y = opt_x - str_w - 8, opt_y + (size - str_h) / 2
-				end
-			end
-	
-		
-			GUI.text_bg(self.optarray[i], self.bg)
-			if #self.optarray == 1 or self.shadow then
-				GUI.shadow(self.optarray[i], self.col_txt, "shadow")
-			else
-				GUI.color(self.col_txt)
-				gfx.drawstr(self.optarray[i])
-			end
-		end
-		
-	end
-	
 end
 
 
@@ -283,23 +174,24 @@ function GUI.Radio:val(newval)
 end
 
 
+
+
+------------------------------------
+-------- Input methods -------------
+------------------------------------
+
+
 -- Radio - Mouse down.
 function GUI.Radio:onmousedown()
-	--[[		
-	--See which option it's on
-	local adj_y = self.y + self.cap_h + self.pad
-	--local adj_h = self.h - self.capheight - self.pad
-	local adj_h = (2*self.radius + self.pad) * #self.optarray
-	local mouseopt = (GUI.mouse.y - adj_y) / adj_h
-		
-	mouseopt = GUI.clamp( math.floor(mouseopt * #self.optarray) + 1 , 1, #self.optarray)
-	]]--
 	
+    local len = #self.optarray
+    
 	-- See which option it's on
-	local mouseopt = self.dir == "h" 	and (GUI.mouse.x - (self.x + self.radius))
-										or	(GUI.mouse.y - (self.y + self.cap_h) )
-	mouseopt = mouseopt / ((2*self.radius + self.pad) * #self.optarray)
-	mouseopt = GUI.clamp( math.floor(mouseopt * #self.optarray) + 1 , 1, #self.optarray )
+	local mouseopt = self.dir == "h" 	
+                    and (GUI.mouse.x - (self.x + self.pad))
+					or	(GUI.mouse.y - (self.y + self.cap_h + 1.5*self.pad) )
+	mouseopt = mouseopt / ((2*self.radius + self.pad) * len)
+	mouseopt = GUI.clamp( math.floor(mouseopt * len) + 1 , 1, len )
 
 	self.state = mouseopt
 
@@ -311,7 +203,8 @@ end
 -- Radio - Mouse up
 function GUI.Radio:onmouseup()
 		
-	-- Set the new option, or revert to the original if the cursor isn't inside the list anymore
+	-- Set the new option, or revert to the original if the cursor 
+    -- isn't inside the list anymore
 	if GUI.IsInside(self, GUI.mouse.x, GUI.mouse.y) then
 		self.retval = self.state
 	else
@@ -336,7 +229,8 @@ end
 -- Radio - Mousewheel
 function GUI.Radio:onwheel()
 	
-	self.state = GUI.round(self.state + (self.dir == "h" and 1 or -1) * GUI.mouse.inc)
+	self.state = GUI.round(self.state +     (self.dir == "h" and 1 or -1) 
+                                        *    GUI.mouse.inc)
 	
 	if self.state < 1 then self.state = 1 end
 	if self.state > #self.optarray then self.state = #self.optarray end
@@ -348,3 +242,106 @@ function GUI.Radio:onwheel()
 end
 
 
+
+
+------------------------------------
+-------- Drawing methods -----------
+------------------------------------
+
+
+function GUI.Radio:drawcaption()
+    
+    GUI.font(self.font_a)
+    
+    gfx.x = self.cap_x
+    gfx.y = self.y - self.cap_h
+    
+    GUI.text_bg(self.caption, self.bg)
+    
+    GUI.shadow(self.caption, self.col_txt, "shadow")
+    
+end
+
+
+function GUI.Radio:drawoptions()
+
+    local x, y, w, h = self.x, self.y, self.w, self.h
+    
+    local horz = self.dir == "h"
+	local pad = self.pad
+    
+    -- Bump everything down for the caption
+    y = y + self.cap_h + 1.5 * pad 
+
+    -- Bump the options down more for horizontal options
+    -- with the text on top
+	if horz and self.caption ~= "" and not self.swap then
+        y = y + self.cap_h + 2*pad 
+    end
+
+	local size = 2 * self.radius
+    
+    local adj = size + pad
+
+    local str, opt_x, opt_y
+
+	for i = 1, #self.optarray do
+	
+		str = self.optarray[i]
+		if str ~= "__" then
+		        
+            opt_x = x + (horz   and (i - 1) * adj + pad
+                                or  (self.swap  and (w - adj - 1) 
+                                                or   pad))
+                                                
+            opt_y = y + (i - 1) * (horz and 0 or adj)
+                
+			-- Draw the option bubble
+            self:drawbubble(opt_x, opt_y, size, i == self.state)
+
+            self:drawvalue(opt_x,opt_y, size, str)
+            
+		end
+		
+	end
+	
+end
+
+
+function GUI.Radio:drawbubble(opt_x, opt_y, size, selected)
+    
+    gfx.blit(   self.buff, 1,  0,  
+                selected and (size + 3) or 1, 1, 
+                size + 1, size + 1, 
+                opt_x, opt_y)
+
+end
+
+
+function GUI.Radio:drawvalue(opt_x, opt_y, size, str)
+
+	GUI.font(self.font_b) 
+
+    local str_w, str_h = gfx.measurestr(str)
+    
+    if self.dir == "h" then
+        
+        gfx.x = opt_x + (size - str_w) / 2
+        gfx.y = opt_y + (self.swap and (size + 4) or -size)
+
+    else
+    
+        gfx.x = opt_x + (self.swap and -(str_w + 8) or 1.5*size)
+        gfx.y = opt_y + (size - str_h) / 2
+        
+    end
+
+    GUI.text_bg(str, self.bg)
+    if #self.optarray == 1 or self.shadow then
+        GUI.shadow(str, self.col_txt, "shadow")
+    else
+        GUI.color(self.col_txt)
+        gfx.drawstr(str)
+    end
+
+end

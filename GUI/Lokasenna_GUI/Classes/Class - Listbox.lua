@@ -110,7 +110,6 @@ function GUI.Listbox:init()
 end
 
 
--- Listbox - Draw.
 function GUI.Listbox:draw()
 	
 	
@@ -137,11 +136,10 @@ function GUI.Listbox:draw()
 	
 	-- Vertical scrollbar
 	if #self.list > self.wnd_h then self:drawscrollbar() end
-
+    
 end
 
 
--- Listbox - Get/set value
 function GUI.Listbox:val(newval)
 	
 	if newval then
@@ -283,12 +281,14 @@ function GUI.Listbox:drawtext()
 	for i = self.wnd_y, math.min(self:wnd_bottom() - 1, #self.list) do
 		
 		local str = tostring(self.list[i]) or ""
-		tmp[#tmp + 1] = string.sub(str, 1, self.wnd_w - 1)
+        tmp[#tmp + 1] = str
 		
 	end	
 
 	gfx.x, gfx.y = self.x + self.pad, self.y + self.pad
-	gfx.drawstr( table.concat(tmp, "\n") )
+    local r = gfx.x + self.w - 2*self.pad
+    local b = gfx.y + self.h - 2*self.pad
+	gfx.drawstr( table.concat(tmp, "\n"), 0, r, b)
 
 end
 
@@ -380,6 +380,7 @@ function GUI.Listbox:wnd_bottom()
 end
 
 
+-- Determine which item the user clicked
 function GUI.Listbox:getitem(y)
 	
 	--local item = math.floor( ( (y - self.y) / self.h ) * self.wnd_h) + self.wnd_y

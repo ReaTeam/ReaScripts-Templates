@@ -33,8 +33,7 @@ handles			Table of default values (in steps, as per above) of each slider handle
 						handles = {5, 10, 15, 20, 25}
 
 Optional:
-dir				**not yet implemented**
-				"h"	Horizontal slider (default)
+dir				"h"	Horizontal slider (default)
 				"v"	Vertical slider
 
 
@@ -141,13 +140,27 @@ end
 
 function GUI.Slider:init()
 	
-	self.buff = self.buff or GUI.GetBuffer()
+	self.buffs = self.buffs or GUI.GetBuffer(2)
 
+    local w, h = self.w, self.h
+
+    -- Track
+    gfx.dest = self.buffs[1]
+    gfx.setimgdim(self.buffs[1], -1, -1)
+    gfx.setimgdim(self.buffs[1], w + 4, h + 4)
+
+	GUI.color("elm_bg")
+	GUI.roundrect(2, 2, w, h, 4, 1, 1)
+	GUI.color("elm_outline")
+	GUI.roundrect(2, 2, w, h, 4, 1, 0)
+    
+
+    -- Handle
 	local hw, hh = table.unpack(self.dir == "h" and {8, 16} or {16, 8})
 
-	gfx.dest = self.buff
-	gfx.setimgdim(self.buff, -1, -1)
-	gfx.setimgdim(self.buff, 2 * hw + 4, hh + 2)
+	gfx.dest = self.buffs[2]
+	gfx.setimgdim(self.buffs[2], -1, -1)
+	gfx.setimgdim(self.buffs[2], 2 * hw + 4, hh + 2)
 	
 	GUI.color(self.col_hnd)
 	GUI.roundrect(1, 1, hw, hh, 2, 1, 1)
@@ -164,243 +177,45 @@ end
 
 function GUI.Slider:ondelete()
 	
-	GUI.FreeBuffer(self.buff)	
+	GUI.FreeBuffer(self.buffs)	
 	
 end
 
 
--- Slider - Draw
 function GUI.Slider:draw()
 
-	local x, y, w, h = self.x, self.y, self.w, self.h
-
-	local steps = self.steps
-	
-	local min, max = self.min, self.max
-	
-		---- Common code, pre-Direction ----
-
+    local x, y, w, h = self.x, self.y, self.w, self.h
 
 	-- Draw track
-	GUI.color("elm_bg")
-	GUI.roundrect(x, y, w, h, 4, 1, 1)
-	GUI.color("elm_outline")
-	GUI.roundrect(x, y, w, h, 4, 1, 0)
+    gfx.blit(self.buffs[1], 1, 0, 1, 1, w + 2, h + 2, x - 1, y - 1)
 
-	
-
-
-
-	local fill = (#self.handles > 1) or self.handles[1].curstep ~= self.handles[1].default
-	
-	if fill then
+    -- To avoid a LOT of copy/pasting for vertical sliders, we can
+    -- just swap x-y and w-h to effectively "rotate" all of the math
+    -- 90 degrees. 'horz' is here to help out in a few situations where
+    -- the values need to be swapped back for drawing stuff.
+    
+    local horz = self.dir ~= "v"
+    if not horz then x, y, w, h = y, x, h, w end
 		
-		-- If the user has given us two colors to make a gradient with
-		if self.col_fill_a and #self.handles == 1 then
-			
-			-- Make a gradient, 
-			local col_a = GUI.colors[self.col_fill_a]
-			local col_b = GUI.colors[self.col_fill_b]
-			local grad_step = self.handles[1].curstep / steps
+    -- Limit everything to be drawn within the square part of the track
+    x, w = x + 4, w - 8
+    
+    -- Size of the handle
+    local handle_w, handle_h = 8, h * 2
+    local inc = w / self.steps
+    local handle_y = y + (h - handle_h) / 2
 
-			local r, g, b, a = GUI.gradient(col_a, col_b, grad_step)
+    -- Get the handles' coordinates and the ends of the fill bar
+    local min, max = self:updatehandlecoords(x, handle_w, handle_y, inc)
+    
+    self:drawfill(x, y, h, min, max, inc, horz)
 
-			gfx.set(r, g, b, a)
-								
-		else
-			GUI.color(self.col_fill)
-		end
-		
-	end
-
-
-	-- Handles
-
-	if self.dir == "h" then
-		
-		-- Limit everything to be drawn within the square part of the track
-		x, w = x + 4, w - 8
-		
-		-- Size of the handle
-		local hw, hh = 8, h * 2
-		local inc = w / steps
-		local fill_min, fill_max
-		local hy = y + (h - hh) / 2
-
-		-- Get the handles' coordinates and the fill bar
-		local x_min, x_max
-		
-		for i = 1, #self.handles do
-			
-			local cx = x + inc * self.handles[i].curstep
-			self.handles[i].x, self.handles[i].y = cx - (hw / 2), hy
-			
-			if not x_min or cx < x_min then	x_min = cx end
-			if not x_max or cx > x_max then x_max = cx end
-			
-		end
-
-		-- Draw the fill bar
-
-		if #self.handles == 1 then
-			x_min = x + inc * self.handles[1].default
-			
-			gfx.circle(x_min, y + (h / 2), h / 2 - 1, 1, 1)	
-			if x_min > x_max then x_min, x_max = x_max, x_min end
-		end
-		
-		gfx.rect(x_min, y + 1, x_max - x_min, h - 1, 1)
-
-
-		-- Drawing them in reverse order so overlaps match the shadow direction
-		for i = #self.handles, 1, -1 do
-		
-			local hx, hy = GUI.round(self.handles[i].x) - 1, GUI.round(self.handles[i].y) - 1
-			
-			if self.show_values then
-				GUI.color(self.col_txt)
-				GUI.font(self.font_b)
-
-				local output = self.handles[i].retval
-					
-				if self.output then
-					local t = type(self.output)
-
-					if t == "string" or t == "number" then
-						output = self.output
-					elseif t == "table" then
-						output = self.output[output]
-					elseif t == "function" then
-						output = self.output(output)
-					end
-				end				
-								
-				local str_w, str_h = gfx.measurestr(output)
-				gfx.x = hx + (hw - str_w) / 2 + 1
-				gfx.y = y + h + h
-				GUI.text_bg(output, self.bg)
-				gfx.drawstr(output)				
-			end
-
-			if self.show_handles then
-				for j = 1, GUI.shadow_dist do
-
-					gfx.blit(self.buff, 1, 0, hw + 2, 0, hw + 2, hh + 2, hx + j, hy + j)
-					
-				end
-
-			
-				--gfx.blit(source, scale, rotation[, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs] )
-			
-				gfx.blit(self.buff, 1, 0, 0, 0, hw + 2, hh + 2, hx, hy) 	
-			end
-			
-		end
-
-
-	elseif self.dir == "v" then
-	
-		-- Limit everything to be drawn within the square part of the track
-		y, h = y + 4, h - 8	
-	
-		-- Size of the handle
-		local hw, hh = w * 2, 8
-		local inc = h / steps
-		local fill_min, fill_max
-		local hx = x + (w - hw) / 2
-
-		-- Get the handles' coordinates and the fill bar
-		local y_min, y_max
-		
-		for i = 1, #self.handles do
-			
-			local cy = y + inc * self.handles[i].curstep
-			self.handles[i].x, self.handles[i].y = hx, cy - (hh / 2)
-			
-			if not y_min or cy < y_min then	y_min = cy end
-			if not y_max or cy > y_max then y_max = cy end
-	
-		end
-
-		-- Draw the fill bar
-
-		if #self.handles == 1 then
-			y_min = y + inc * self.handles[1].default
-			
-			gfx.circle(x + (w / 2), y_min, w / 2 - 1, 1, 1)	
-			if y_min > y_max then y_min, y_max = y_max, y_min end
-		end
-		
-		gfx.rect(x + 1, y_min, w - 1, y_max - y_min, 1)
-
-
-		-- Drawing them in reverse order so overlaps match the shadow direction
-		for i = #self.handles, 1, -1 do
-		
-			local hx, hy = GUI.round(self.handles[i].x) - 1, GUI.round(self.handles[i].y) - 1
-
-			if self.show_values then
-				GUI.color(self.col_txt)
-				GUI.font(self.font_b)
-
-				local output = self.handles[i].retval
-					
-				if self.output then
-					local t = type(self.output)
-
-					if t == "string" or t == "number" then
-						output = self.output
-					elseif t == "table" then
-						output = self.output[i]
-					elseif t == "function" then
-						output = self.output(i)
-					end
-				end				
-								
-				local str_w, str_h = gfx.measurestr(output)
-				gfx.x = x + w + w
-				gfx.y = hy + (hh - str_h) / 2 + 1
-				GUI.text_bg(output, self.bg)
-				gfx.drawstr(output)
-				
-			end
-			
-			if self.show_handles then
-				for j = 1, GUI.shadow_dist do
-
-					gfx.blit(self.buff, 1, 0, hw + 2, 0, hw + 2, hh + 2, hx + j, hy + j)
-					
-				end
-				
-				--gfx.blit(source, scale, rotation[, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs] )
-				
-				gfx.blit(self.buff, 1, 0, 0, 0, hw + 2, hh + 2, hx, hy) 	
-			end
-	
-		end
-	
-	
-	end
-
-
-	-- Draw caption	
-	GUI.font(self.font_a)
-	
-	local str_w, str_h = gfx.measurestr(self.caption)
-	--[[
-	gfx.x = x + (w - str_w) / 2
-	gfx.y = y - h - str_h
-	]]--
-	gfx.x = x + (w - str_w) / 2 + self.cap_x
-	gfx.y = y - (self.dir ~= "v" and h or w) - str_h + self.cap_y
-	GUI.text_bg(self.caption, self.bg)
-	GUI.shadow(self.caption, self.col_txt, "shadow")
+    self:drawsliders(x, y, h, handle_w, handle_h, horz)
+    if self.caption and self.caption ~= "" then self:drawcaption() end
 	
 end
 
 
-
--- Slider - Get/set value
 function GUI.Slider:val(newvals)
 	
 	if newvals then
@@ -412,9 +227,7 @@ function GUI.Slider:val(newvals)
 		
 		for i = 1, #self.handles do
 			
-			self.handles[i].curstep = newvals[i]
-			self.handles[i].curval = self.handles[i].curstep / steps
-			self.handles[i].retval = GUI.round( (inc * self.handles[i].curstep) + min)
+            self:setcurstep(i, newvals[i])
 			
 		end
 		
@@ -424,8 +237,6 @@ function GUI.Slider:val(newvals)
 		
 		local ret = {}
 		for i = 1, #self.handles do
-			
-			--dir ~= "v" and handles[i] or (steps - handles[i])
 			
 			table.insert(ret, (self.dir ~= "v" 	and (self.handles[i].curstep + self.min)
 												or	(self.steps - self.handles[i].curstep)))
@@ -444,7 +255,13 @@ function GUI.Slider:val(newvals)
 end
 
 
--- Slider - Mouse down
+
+
+------------------------------------
+-------- Input methods -------------
+------------------------------------
+
+
 function GUI.Slider:onmousedown()
 	
 	-- Snap the nearest slider to the nearest value
@@ -453,35 +270,15 @@ function GUI.Slider:onmousedown()
 					and (GUI.mouse.x - self.x) / self.w 
 					or  (GUI.mouse.y - self.y) / self.h	
 	
-	local small_diff, small_idx
+    self.cur_handle = self:getnearesthandle(mouse_val)
 	
-	for i = 1, #self.handles do
-
-		local diff = math.abs( self.handles[i].curval - mouse_val )
-	
-		if not small_diff or (math.abs( self.handles[i].curval - mouse_val ) < small_diff) then
-			small_diff = diff
-			small_idx = i
-
-		end
-		
-	end
-	
-	cur = small_idx
-	self.cur_handle = cur
-
-	mouse_val = GUI.clamp(mouse_val, 0, 1)
-	
-	self.handles[cur].curval = mouse_val
-	self.handles[cur].curstep = GUI.round(mouse_val * self.steps)
-	self.handles[cur].retval = GUI.round( ( (self.max - self.min) / self.steps ) * self.handles[cur].curstep + self.min )
+	self:setcurval(self.cur_handle, GUI.clamp(mouse_val, 0, 1) )
 
 	GUI.redraw_z[self.z] = true	
 	
 end
 
 
--- Slider - Dragging
 function GUI.Slider:ondrag()
 
 	local mouse_val, n, ln = table.unpack(self.dir == "h" 
@@ -500,17 +297,13 @@ function GUI.Slider:ondrag()
 	local adj_scale = (self.dir == "h" and self.w or self.h) / 150
 	adj = adj * adj_scale
 
-	self.handles[cur].curval = GUI.clamp( self.handles[cur].curval + ((n - ln) / adj) , 0, 1 )
-	self.handles[cur].curstep = GUI.round( self.handles[cur].curval * self.steps )
-	self.handles[cur].retval = GUI.round( ( (self.max - self.min) / self.steps ) * self.handles[cur].curstep + self.min )
+    self:setcurval(cur, GUI.clamp( self.handles[cur].curval + ((n - ln) / adj) , 0, 1 ) )
 
-	--self:sort()
 	GUI.redraw_z[self.z] = true
 
 end
 
 
--- Slider - Mousewheel
 function GUI.Slider:onwheel()
 	
 	local mouse_val = self.dir == "h" 
@@ -520,20 +313,7 @@ function GUI.Slider:onwheel()
 	local inc = GUI.round( self.dir == "h" and GUI.mouse.inc
 											or -GUI.mouse.inc )
 	
-	local small_diff, small_idx	
-	
-	for i = 1, #self.handles do
-		
-		local diff = math.abs( self.handles[i].curval - mouse_val )
-		if not small_diff or diff < small_diff then
-			small_diff = diff
-			small_idx = i
-		end
-		
-	end	
-	
-	local cur = small_idx
-	
+    local cur = self:getnearesthandle(mouse_val)	
 	
 	local ctrl = GUI.mouse.cap&4==4
 
@@ -543,12 +323,8 @@ function GUI.Slider:onwheel()
 
 	local adj = ctrl and fine or coarse
 
-	self.handles[cur].curval = GUI.clamp( self.handles[cur].curval + (inc * adj / self.steps) , 0, 1)
+    self:setcurval(cur, GUI.clamp( self.handles[cur].curval + (inc * adj / self.steps) , 0, 1) )
 	
-	self.handles[cur].curstep = GUI.round( self.handles[cur].curval * self.steps )
-	self.handles[cur].retval = GUI.round(((self.max - self.min) / self.steps) * self.handles[cur].curstep + self.min)
-
-	--self:sort()
 	GUI.redraw_z[self.z] = true
 
 end
@@ -556,18 +332,11 @@ end
 
 function GUI.Slider:ondoubleclick()
 	
-	local ctrl = GUI.mouse.cap&4==4
-	local min, max, steps = self.min, self.max, self.steps
-	local inc = (max - min) / steps
-	
-	if ctrl then
+    -- Ctrl+click - Only reset the closest slider to the mouse
+	if GUI.mouse.cap & 4 == 4 then
 		
-		-- Only reset the closest slider
-		
-		local mouse_val = (GUI.mouse.x - self.x) / self.w
-		
+		local mouse_val = (GUI.mouse.x - self.x) / self.w		
 		local small_diff, small_idx
-	
 		for i = 1, #self.handles do
 			
 			local diff = math.abs( self.handles[i].curval - mouse_val )
@@ -578,26 +347,240 @@ function GUI.Slider:ondoubleclick()
 			
 		end	
 
-			
-		local cur = small_idx
-		
-		self.handles[cur].curstep = self.handles[cur].default
-		self.handles[cur].curval = self.handles[cur].curstep / self.steps
-		self.handles[cur].retval = GUI.round(inc * self.handles[cur].curstep + self.min)
-		
+        self:setcurstep(small_idx, self.handles[small_idx].default)
+    
+    -- Reset all sliders
 	else
 	
 		for i = 1, #self.handles do
 			
-			self.handles[i].curstep = self.handles[i].default
-			self.handles[i].curval = self.handles[i].curstep / self.steps
-			self.handles[i].retval = GUI.round(inc * self.handles[i].curstep + self.min)	
-			
+            self:setcurstep(i, self.handles[i].default)
+            
 		end
 		
 	end
 
-	--self:sort()
 	GUI.redraw_z[self.z] = true
 	
+end
+
+
+
+
+------------------------------------
+-------- Drawing helpers -----------
+------------------------------------
+
+
+function GUI.Slider:updatehandlecoords(x, handle_w, handle_y, inc)
+    
+    local min, max
+    
+    for i = 1, #self.handles do
+        
+        local center = x + inc * self.handles[i].curstep
+        self.handles[i].x, self.handles[i].y = center - (handle_w / 2), handle_y
+        
+        if not min or center < min then min = center end
+        if not max or center > max then max = center end
+        
+    end
+    
+    return min, max
+    
+end    
+
+
+function GUI.Slider:drawfill(x, y, h, min, max, inc, horz)
+    
+    -- Get the color
+	if (#self.handles > 1) 
+    or self.handles[1].curstep ~= self.handles[1].default then
+    
+        self:setfill()
+    
+    end    
+    
+    -- Cap for the fill bar
+    if #self.handles == 1 then
+        min = x + inc * self.handles[1].default
+        
+        _ = horz and gfx.circle(min, y + (h / 2), h / 2 - 1, 1, 1)
+                 or  gfx.circle(y + (h / 2), min, h / 2 - 1, 1, 1)
+
+    end
+    
+    if min > max then min, max = max, min end
+
+    _ = horz and gfx.rect(min, y + 1, max - min, h - 1, 1)
+             or  gfx.rect(y + 1, min, h - 1, max - min, 1)
+             
+end  
+
+
+function GUI.Slider:setfill()
+    
+    -- If the user has given us two colors to make a gradient with
+    if self.col_fill_a and #self.handles == 1 then
+        
+        -- Make a gradient, 
+        local col_a = GUI.colors[self.col_fill_a]
+        local col_b = GUI.colors[self.col_fill_b]
+        local grad_step = self.handles[1].curstep / self.steps
+
+        local r, g, b, a = GUI.gradient(col_a, col_b, grad_step)
+
+        gfx.set(r, g, b, a)
+                            
+    else
+        GUI.color(self.col_fill)
+    end
+    
+end
+
+
+function GUI.Slider:drawsliders(x, y, h, handle_w, handle_h, horz)
+
+    GUI.color(self.col_txt)
+    GUI.font(self.font_b)
+
+    -- Drawing them in reverse order so overlaps match the shadow direction
+    for i = #self.handles, 1, -1 do
+    
+        local handle_x, handle_y = GUI.round(self.handles[i].x) - 1, GUI.round(self.handles[i].y) - 1
+        
+        if self.show_values then
+            
+            local x, y =    handle_x,
+                            y + h + h
+            
+            if horz then
+                self:drawslidervalue(x, y, i)
+            else
+                self:drawslidervalue(y, x - 2, i)
+            end
+            
+        end
+
+        if self.show_handles then
+            
+            if horz then
+                self:drawsliderhandle(handle_x, handle_y, handle_w, handle_h)
+            else
+                self:drawsliderhandle(handle_y, handle_x, handle_h, handle_w)
+            end
+
+        end
+        
+    end
+
+end
+
+
+function GUI.Slider:drawslidervalue(x, y, sldr)
+    
+    local output = self.handles[sldr].retval
+        
+    if self.output then
+        local t = type(self.output)
+
+        if t == "string" or t == "number" then
+            output = self.output
+        elseif t == "table" then
+            output = self.output[output]
+        elseif t == "function" then
+            output = self.output(output)
+        end
+    end				
+
+    gfx.x, gfx.y = x, y
+
+    GUI.text_bg(output, self.bg)
+    gfx.drawstr(output, 1)
+    
+end
+
+                
+function GUI.Slider:drawsliderhandle(hx, hy, hw, hh)
+
+    for j = 1, GUI.shadow_dist do
+
+        gfx.blit(self.buffs[2], 1, 0, hw + 2, 0, hw + 2, hh + 2, hx + j, hy + j)
+        
+    end
+
+    --gfx.blit(source, scale, rotation[, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs] )
+
+    gfx.blit(self.buffs[2], 1, 0, 0, 0, hw + 2, hh + 2, hx, hy) 
+    
+end
+
+
+function GUI.Slider:drawcaption()
+
+	GUI.font(self.font_a)
+	
+	local str_w, str_h = gfx.measurestr(self.caption)
+
+	gfx.x = self.x + (self.w - str_w) / 2 + self.cap_x
+	gfx.y = self.y - (self.dir ~= "v" and self.h or self.w) - str_h + self.cap_y
+	GUI.text_bg(self.caption, self.bg)
+	GUI.shadow(self.caption, self.col_txt, "shadow")
+    
+end
+
+
+
+
+------------------------------------
+-------- Slider helpers ------------
+------------------------------------
+
+
+function GUI.Slider:getnearesthandle(val)
+    
+	local small_diff, small_idx
+	
+	for i = 1, #self.handles do
+
+		local diff = math.abs( self.handles[i].curval - val )
+	
+		if not small_diff or (diff < small_diff) then
+			small_diff = diff
+			small_idx = i
+
+		end
+		
+	end
+    
+    return small_idx
+    
+end
+
+
+function GUI.Slider:setcurstep(sldr, step)
+
+    local inc = (self.max - self.min) / self.steps 
+    self.handles[sldr].curstep = step
+    self.handles[sldr].curval = self.handles[sldr].curstep / self.steps
+    self:setretval(sldr)
+    
+    
+end
+
+
+function GUI.Slider:setcurval(sldr, val)
+   
+    self.handles[sldr].curval = val
+    self.handles[sldr].curstep = GUI.round(val * self.steps)
+    self:setretval(sldr)
+    
+end
+
+
+function GUI.Slider:setretval(sldr)
+    
+    local inc = (self.max - self.min) / self.steps    
+    self.handles[sldr].retval = GUI.round(inc * self.handles[sldr].curstep + self.min)   
+    
 end

@@ -63,7 +63,6 @@ if not GUI then
 end
 
 
--- Checklist - New
 GUI.Checklist = GUI.Element:new()
 function GUI.Checklist:new(name, z, x, y, w, h, caption, opts, dir, pad)
 	
@@ -77,14 +76,12 @@ function GUI.Checklist:new(name, z, x, y, w, h, caption, opts, dir, pad)
 	
 	chk.x, chk.y, chk.w, chk.h = x, y, w, h
 	
-	-- constant for the square size
-	chk.chk_w = 20
-
 	chk.caption = caption
+    
+	chk.frame = true
 	chk.bg = "wnd_bg"
 	
-	chk.dir = dir or "v"
-	
+	chk.dir = dir or "v"	
 	chk.pad = pad or 4
 	
 	chk.col_txt = "txt"
@@ -92,12 +89,13 @@ function GUI.Checklist:new(name, z, x, y, w, h, caption, opts, dir, pad)
 	
 	chk.font_a = 2
 	chk.font_b = 3
-	
-	chk.frame = true
-	
+		
 	chk.shadow = true
 	
 	chk.swap = false
+    
+	-- constant for the square size
+	chk.chk_w = 20    
 
 	-- Parse the string of options into a table
 	chk.optarray, chk.optsel = {}, {}
@@ -107,7 +105,6 @@ function GUI.Checklist:new(name, z, x, y, w, h, caption, opts, dir, pad)
 		chk.optsel[tempidx] = false
 		tempidx = tempidx + 1
 	end
-	
 	
 	chk.retval = chk.optsel
 
@@ -130,6 +127,7 @@ function GUI.Checklist:init()
 	
 	GUI.color("elm_frame")
 	gfx.rect(1, 1, w, w, 0)
+    gfx.rect(w + 3, 1, w, w, 0)
 	
 	GUI.color(self.col_fill)
 	gfx.rect(w + 3 + 0.25*w, 1 + 0.25*w, 0.5*w, 0.5*w, 1)
@@ -147,107 +145,20 @@ function GUI.Checklist:init()
 end
 
 
-
--- Checklist - Draw
 function GUI.Checklist:draw()
-	
-	
-	local x, y, w, h = self.x, self.y, self.w, self.h
-
-	local dir = self.dir
-	local pad = self.pad
-	local f_color = self.col_fill
-	
-	-- Draw the element frame
+		
 	if self.frame then
 		GUI.color("elm_frame")
-		gfx.rect(x, y, w, h, 0)
+		gfx.rect(self.x, self.y, self.w, self.h, 0)
 	end	
-	
-	if self.caption ~= "" then
-		GUI.font(self.font_a)
-		
-		gfx.x = self.cap_x
-		gfx.y = y - self.cap_h
-		
-		GUI.text_bg(self.caption, self.bg)
-		
-		GUI.shadow(self.caption, self.col_txt, "shadow")
-		
-		y = y + self.cap_h + pad
-	end
+    
+    if self.caption and self.caption ~= "" then self:drawcaption() end
 
-
-	-- Draw the options
-	GUI.color("txt")
-
-	local size = self.chk_w
-	
-	-- Set the options slightly into the frame
-	x, y = x + 0.5*pad, y + 0.5*pad
-	
-	-- If horizontal, leave some extra space for labels
-	if dir == "h" and self.caption ~= "" and not self.swap then y = y + self.cap_h + 2*pad end	
-	local x_adj, y_adj = table.unpack(dir == "h" and { (size + pad), 0 } or { 0, (size + pad) })
-	
-	GUI.font(self.font_b)
-
-	for i = 1, #self.optarray do
-		
-		local str = self.optarray[i]
-		
-		if str ~= "__" then
-		
-			local opt_x, opt_y = x + (i - 1) * x_adj, y + (i - 1) * y_adj
-			
-			-- Draw the option frame
-			--GUI.color("elm_frame")
-			--gfx.rect(opt_x, opt_y, size, size, 0)
-			gfx.blit(self.buff, 1, 0, 1, 1, size, size, opt_x, opt_y)
-					
-			-- Fill in if selected
-			if self.optsel[i] == true then
-				
-				--GUI.color(f_color)
-				--gfx.rect(opt_x + size * 0.25, opt_y + size * 0.25, size / 2, size / 2, 1)
-				gfx.blit(self.buff, 1, 0, size + 3, 1, size, size, opt_x, opt_y)
-			
-			end
-		
-			
-			local str_w, str_h = gfx.measurestr(self.optarray[i])
-			local swap = self.swap
-			
-			if dir == "h" then
-				if not swap then
-					gfx.x, gfx.y = opt_x + (size - str_w) / 2, opt_y - size
-				else
-					gfx.x, gfx.y = opt_x + (size - str_w) / 2, opt_y + size + 4
-				end
-			else
-				if not swap then
-					gfx.x, gfx.y = opt_x + 1.5 * size, opt_y + (size - str_h) / 2
-				else
-					gfx.x, gfx.y = opt_x - str_w - 8, opt_y + (size - str_h) / 2
-				end
-			end
-	
-		
-			GUI.text_bg(self.optarray[i], self.bg)
-			if #self.optarray == 1 or self.shadow then
-				GUI.shadow(self.optarray[i], self.col_txt, "shadow")
-			else
-				GUI.color(self.col_txt)
-				gfx.drawstr(self.optarray[i])
-			end
-		end
-		
-	end
-	
+    self:drawoptions()
+    
 end
 
 
--- Checklist - Get/set value. Returns a table of boolean values for each option.
 function GUI.Checklist:val(new)
 	
 	if new then
@@ -264,21 +175,132 @@ function GUI.Checklist:val(new)
 end
 
 
--- Checklist - Mouse down
+
+
+------------------------------------
+-------- Input methods -------------
+------------------------------------
+
+
 function GUI.Checklist:onmouseup()
 
+    local len = #self.optarray
+
 	-- See which option it's on
-	local mouseopt = self.dir == "h" 	and (GUI.mouse.x - (self.x + 0.5*self.chk_w))
-										or	(GUI.mouse.y - (self.y + self.cap_h) )
-	mouseopt = mouseopt / ((self.chk_w + self.pad) * #self.optarray)
-	mouseopt = GUI.clamp( math.floor(mouseopt * #self.optarray) + 1 , 1, #self.optarray )
-	
-	-- Toggle that option
+	local mouseopt = self.dir == "h" 	
+                    and (GUI.mouse.x - (self.x + self.pad))
+                    or	(GUI.mouse.y - (self.y + self.cap_h + 1.5*self.pad) )
+	mouseopt = mouseopt / ((self.chk_w + self.pad) * len)
+	mouseopt = GUI.clamp( math.floor(mouseopt * len) + 1 , 1, len )
 	
 	self.optsel[mouseopt] = not self.optsel[mouseopt] 
 
 	GUI.redraw_z[self.z] = true
-	--self:val()
 	
 end
 
+
+
+
+------------------------------------
+-------- Drawing methods -----------
+------------------------------------
+
+
+function GUI.Checklist:drawcaption()
+    
+    GUI.font(self.font_a)
+    
+    gfx.x = self.cap_x
+    gfx.y = self.y - self.cap_h
+    
+    GUI.text_bg(self.caption, self.bg)
+    
+    GUI.shadow(self.caption, self.col_txt, "shadow")
+    
+end
+
+
+function GUI.Checklist:drawoptions()
+    
+    local x, y, w, h = self.x, self.y, self.w, self.h
+    
+    local horz = self.dir == "h"
+    local pad = self.pad
+    
+	y = y + self.cap_h + 1.5*pad
+
+    -- Bump the options down a little more for horizontal options
+    -- with the text on top
+    if horz and self.caption ~= "" and not self.swap then
+        y = y + self.cap_h + 2 * pad
+    end
+    
+	GUI.color("txt")
+
+	local size = self.chk_w
+	
+    local adj = size + pad
+    
+    local str, opt_x, opt_y
+    
+    for i = 1, #self.optarray do
+        
+        str = self.optarray[i]
+        if str ~= "__" then
+            
+            opt_x = x + (horz   and (i - 1) * adj + pad
+                                or  (self.swap  and (w - adj - 1) 
+                                                or   pad))
+                                                
+            opt_y = y + (i - 1) * (horz and 0 or adj)
+                            
+            -- Draw the check box
+            self:drawbox(opt_x, opt_y, size, self.optsel[i])
+            
+            self:drawvalue(opt_x, opt_y, size, str)
+        
+        end
+        
+    end
+    
+end
+    
+
+function GUI.Checklist:drawbox(opt_x, opt_y, size, selected)
+    
+    gfx.blit(   self.buff, 1,  0,  
+                selected and (size + 3) or 1, 1, 
+                size + 1, size + 1, 
+                opt_x, opt_y)
+
+end
+
+
+function GUI.Checklist:drawvalue(opt_x, opt_y, size, str)
+
+	GUI.font(self.font_b) 
+
+    local str_w, str_h = gfx.measurestr(str)
+    
+    if self.dir == "h" then
+        
+        gfx.x = opt_x + (size - str_w) / 2
+        gfx.y = opt_y + (self.swap and (size + 4) or -size)
+
+    else
+    
+        gfx.x = opt_x + (self.swap and -(str_w + 8) or 1.5*size)
+        gfx.y = opt_y + (size - str_h) / 2
+        
+    end
+
+    GUI.text_bg(str, self.bg)
+    if #self.optarray == 1 or self.shadow then
+        GUI.shadow(str, self.col_txt, "shadow")
+    else
+        GUI.color(self.col_txt)
+        gfx.drawstr(str)
+    end
+
+end

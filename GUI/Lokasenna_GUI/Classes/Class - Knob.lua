@@ -98,18 +98,13 @@ end
 
 function GUI.Knob:init()
 	
-	self.buff = GUI.GetBuffer()
+	self.buff = self.buff or GUI.GetBuffer()
 	
 	gfx.dest = self.buff
 	gfx.setimgdim(self.buff, -1, -1)
 
-
-
-
-		---- The knob ----
-	
 	-- Figure out the points of the triangle
-	--local curangle = (-5 / 4) + (curstep * stepangle) 
+
 	local r = self.w / 2
 	local rp = r * 1.5
 	local curangle = 0
@@ -119,19 +114,12 @@ function GUI.Knob:init()
 
 	gfx.setimgdim(self.buff, 2*w, w)
 
+	local side_angle = (math.acos(0.666667) / GUI.pi) * 0.9
 
 	local Ax, Ay = GUI.polar2cart(curangle, rp, o, o)
-	
-	--[[	old, knob's head was too narrow
-	local Bx, By = GUI.polar2cart(curangle + 1/2, r - 1, o.x, o.y)
-	local Cx, Cy = GUI.polar2cart(curangle - 1/2, r - 1, o.x, o.y)
-	]]--
-	
-	local side_angle = (math.acos(0.666667) / GUI.pi) * 0.9
-	local Bx, By = GUI.polar2cart(curangle + side_angle, r - 1, o, o)
+    local Bx, By = GUI.polar2cart(curangle + side_angle, r - 1, o, o)
 	local Cx, Cy = GUI.polar2cart(curangle - side_angle, r - 1, o, o)
-	
-	
+		
 	-- Head
 	GUI.color(self.col_head)
 	GUI.triangle(1, Ax, Ay, Bx, By, Cx, Cy)
@@ -161,117 +149,38 @@ end
 -- Knob - Draw
 function GUI.Knob:draw()
 	
+	local x, y = self.x, self.y
 	
-	local x, y, w = self.x, self.y, self.w
-
-	local caption = self.caption
-	
-	local min, max = self.min, self.max
-
-	--local default = self.default
-	
-	local vals = self.vals
-	local stepangle = self.stepangle
-	
-	local curstep = self.curstep
-	
-	local steps = self.steps
-	
-	local r = w / 2
+	local r = self.w / 2
 	local o = {x = x + r, y = y + r}
-	
-	
+
+
+	-- Value labels
+	if self.vals then self:drawvals(o, r) end
+
+    if self.caption and self.caption ~= "" then self:drawcaption(o, r) end
+
+
 	-- Figure out where the knob is pointing
-	local curangle = (-5 / 4) + (curstep * stepangle)
-	
+	local curangle = (-5 / 4) + (self.curstep * self.stepangle)
 
-	-- Ticks and labels	
-	if vals then
-		
-		--GUI.font(4)
-		
-		for i = 0, steps do
-			
-			local angle = (-5 / 4 ) + (i * stepangle)
-			
-
-			--[[	Disabled; the lines don't show up well after blitting
-				
-			-- Tick marks
-			local x1, y1 = GUI.polar2cart(angle, r * 1.2, o.x, o.y)
-			local x2, y2 = GUI.polar2cart(angle, r * 1.6, o.x, o.y)
-			
-			GUI.color(self.bg)
-			gfx.rect(x1 - 2, y1 - 2, (x2 - x1 + 4), (y2 - y1 + 4), true)
-			GUI.color("elm_frame")				
-			gfx.line(x1, y1, x2, y2)
-			]]--
-			
-			-- Highlight the current value
-			if i == curstep then
-				GUI.color(self.col_head)
-				GUI.font({GUI.fonts[self.font_b][1], GUI.fonts[self.font_b][2] * 1.2, "b"})
-			else
-				GUI.color(self.col_txt)
-				GUI.font(self.font_b)
-			end
-			
-			local output = i + min
-
-			if self.output then
-				local t = type(self.output)
-
-				if t == "string" or t == "number" then
-					output = self.output
-				elseif t == "table" then
-					output = self.output[i]
-				elseif t == "function" then
-					output = self.output(i)
-				end
-			end
-			
-			-- Avoid any crashes from weird user data
-			output = tostring(output)
-
-			if output ~= "" then
-				
-				local str_w, str_h = gfx.measurestr(output)
-				local cx, cy = GUI.polar2cart(angle, r * 2, o.x, o.y)		
-				gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
-				GUI.text_bg(output, self.bg)
-				gfx.drawstr(output)
-			end			
-				
-		end
-	end
-	
-	
-	-- Caption
-	
-	GUI.font(self.font_a)
-	cx, cy = GUI.polar2cart(1/2, r * 2, o.x, o.y)
-	local str_w, str_h = gfx.measurestr(caption)
-	gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
-	GUI.text_bg(caption, self.bg)
-	GUI.shadow(caption, self.col_txt, "shadow")
-
-	local bw = 3 * r + 2
-	local bx = 1.5 * r
+	local blit_w = 3 * r + 2
+	local blit_x = 1.5 * r
 
 	-- Shadow
 	for i = 1, GUI.shadow_dist do
 		
-		gfx.blit(self.buff, 1, curangle * GUI.pi, bw + 1, 0, bw, bw, o.x - bx + i - 1, o.y - bx + i - 1)	
+		gfx.blit(   self.buff, 1, curangle * GUI.pi, 
+                    blit_w + 1, 0, blit_w, blit_w, 
+                    o.x - blit_x + i - 1, o.y - blit_x + i - 1)	
 		
 	end
 	
 	-- Body
-	
-	gfx.blit(self.buff, 1, curangle * GUI.pi, 0, 0, bw, bw, o.x - bx - 1, o.y - bx - 1)
+	gfx.blit(   self.buff, 1, curangle * GUI.pi,
+                0, 0, blit_w, blit_w, 
+                o.x - blit_x - 1, o.y - blit_x - 1)
 
-
-	--self.retval = GUI.round(((max - min) / steps) * curstep + min)
-	
 end
 
 
@@ -354,3 +263,67 @@ function GUI.Knob:onwheel()
 
 end
 
+
+
+------------------------------------
+-------- Drawing methods -----------
+------------------------------------
+
+function GUI.Knob:drawcaption(o, r)
+    
+    local str = self.caption
+    
+	GUI.font(self.font_a)
+	local cx, cy = GUI.polar2cart(1/2, r * 2, o.x, o.y)
+	local str_w, str_h = gfx.measurestr(str)
+	gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
+	GUI.text_bg(str, self.bg)
+	GUI.shadow(str, self.col_txt, "shadow")
+    
+end
+
+
+function GUI.Knob:drawvals(o, r)        
+        
+    for i = 0, self.steps do
+        
+        local angle = (-5 / 4 ) + (i * self.stepangle)
+        
+        -- Highlight the current value
+        if i == self.curstep then
+            GUI.color(self.col_head)
+            GUI.font({GUI.fonts[self.font_b][1], GUI.fonts[self.font_b][2] * 1.2, "b"})
+        else
+            GUI.color(self.col_txt)
+            GUI.font(self.font_b)
+        end
+        
+        local output = i + self.min
+
+        if self.output then
+            local t = type(self.output)
+
+            if t == "string" or t == "number" then
+                output = self.output
+            elseif t == "table" then
+                output = self.output[i]
+            elseif t == "function" then
+                output = self.output(i)
+            end
+        end
+        
+        -- Avoid any crashes from weird user data
+        output = tostring(output)
+
+        if output ~= "" then
+            
+            local str_w, str_h = gfx.measurestr(output)
+            local cx, cy = GUI.polar2cart(angle, r * 2, o.x, o.y)		
+            gfx.x, gfx.y = cx - str_w / 2, cy - str_h / 2
+            GUI.text_bg(output, self.bg)
+            gfx.drawstr(output)
+        end			
+            
+    end
+
+end

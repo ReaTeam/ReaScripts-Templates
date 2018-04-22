@@ -61,12 +61,14 @@ function GUI.Frame:new(name, z, x, y, w, h, shadow, fill, color, round)
 	Frame.shadow = shadow or false
 	Frame.fill = fill or false
 	Frame.color = color or "elm_frame"
-	Frame.round = 0
+	Frame.round = round or 0
 	
 	Frame.text = ""
 	Frame.txt_indent = 0
 	Frame.txt_pad = 0
+    
 	Frame.bg = "wnd_bg"
+    
 	Frame.font = 4
 	Frame.col_txt = "txt"
 	Frame.pad = 4
@@ -80,63 +82,106 @@ end
 
 
 function GUI.Frame:init()
-	
-	if self.text and self.text:len() > 0 then
-		self.text = GUI.word_wrap(self.text, self.font, self.w - 2*self.pad, self.txt_indent, self.txt_pad)
-	end
-	
+    
+    self.buff = self.buff or GUI.GetBuffer()
+    
+    gfx.dest = self.buff
+    gfx.setimgdim(self.buff, -1, -1)
+    gfx.setimgdim(self.buff, 2 * self.w + 4, self.h + 2)
+
+    self:drawframe()
+
+    self:drawtext()
+    
 end
 
 
 function GUI.Frame:draw()
 	
-	if self.color == "none" then return 0 end
-	
-	local x, y, w, h = self.x, self.y, self.w, self.h
-	local fill = self.fill
-	local round = self.round
-	local shadow = self.shadow
-	
-	if shadow then
-		GUI.color("shadow")
-		for i = 1, GUI.shadow_dist do
-			if round > 0 then
-				GUI.roundrect(x + i, y + i, w, h, round, 1, fill)
-			else
-				gfx.rect(x + i, y + i, w, h, fill)
-			end
-		end
-	end
-	
-	
-	GUI.color(self.color)
-	if round > 0 then
-		GUI.roundrect(x, y, w, h, round, 1, fill)
-	else
-		gfx.rect(x, y, w, h, fill)
-	end
-	
-	if self.text and self.text:len() > 0 then
-		
-		GUI.font(self.font)
-		GUI.color(self.col_txt)
-		
-		gfx.x, gfx.y = self.x + self.pad, self.y + self.pad
-		if not fill then GUI.text_bg(self.text, self.bg) end
-		gfx.drawstr(self.text)		
-		
-	end	
+    local x, y, w, h = self.x, self.y, self.w, self.h
+    
+    if self.shadow then
+        
+        for i = 1, GUI.shadow_dist do
+            
+            gfx.blit(self.buff, 1, 0, w + 2, 0, w + 2, h + 2, x + i - 1, y + i - 1)
+            
+        end
+        
+    end
+    
+    gfx.blit(self.buff, 1, 0, 0, 0, w + 2, h + 2, x - 1, y - 1) 
 
 end
+
 
 function GUI.Frame:val(new)
 
 	if new then
-		self.text = GUI.word_wrap(new, self.font, self.w - 2*self.pad, self.txt_indent, self.txt_pad)
+		self.text = new
+        self:init()
 		GUI.redraw_z[self.z] = true
 	else
-		return self.text
+		return string.gsub(self.text, "\n", "")
 	end
 
 end
 
+
+
+
+------------------------------------
+-------- Drawing methods -----------
+------------------------------------
+
+
+function GUI.Frame:drawframe()
+    
+    local w, h = self.w, self.h
+	local fill = self.fill
+	local round = self.round
+    
+    -- Frame background
+    GUI.color(self.bg)
+    if round > 0 then
+        GUI.roundrect(1, 1, w, h, round, 1, true)
+    else
+        gfx.rect(1, 1, w, h, true)
+    end
+    
+    
+    -- Shadow
+    local r, g, b, a = table.unpack(GUI.colors["shadow"])
+	gfx.set(r, g, b, 1)
+	GUI.roundrect(self.w + 2, 1, self.w, self.h, 4, 1, 1)
+	gfx.muladdrect(self.w + 2, 1, self.w + 2, self.h + 2, 1, 1, 1, a, 0, 0, 0, 0 )
+
+    
+    -- Frame
+	GUI.color(self.color)
+	if round > 0 then
+		GUI.roundrect(1, 1, w, h, round, 1, fill)
+	else
+		gfx.rect(1, 1, w, h, fill)
+	end
+
+end
+
+
+function GUI.Frame:drawtext()
+    
+	if self.text and self.text:len() > 0 then
+
+		self.text = GUI.word_wrap(  self.text, self.font, self.w - 2*self.pad, 
+                                    self.txt_indent, self.txt_pad)
+
+		GUI.font(self.font)
+		GUI.color(self.col_txt)
+        
+		gfx.x, gfx.y = self.pad + 1, self.pad + 1
+		if not fill then GUI.text_bg(self.text, self.bg) end
+		gfx.drawstr(self.text)
+		
+	end
+    
+end

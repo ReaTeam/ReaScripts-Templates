@@ -96,7 +96,8 @@ function GUI.Tabs:new(name, z, x, y, tab_w, tab_h, opts, pad)
 	Tab.col_tab_a = "wnd_bg"
 	Tab.col_tab_b = "tab_bg"
 	
-	Tab.dir = dir or "u"
+    -- Placeholder for if I ever figure out downward tabs
+	Tab.dir = "u"
 	
 	Tab.pad = pad
 	
@@ -115,8 +116,8 @@ function GUI.Tabs:new(name, z, x, y, tab_w, tab_h, opts, pad)
 		Tab.z_sets[i] = {}
 	end
 	
-	-- Figure out the total size of the Tab now that we know the number of buttons
-	-- Necessary so we can do the math for clicking on it
+	-- Figure out the total size of the Tab frame now that we know the 
+    -- number of buttons, so we can do the math for clicking on it
 	Tab.w, Tab.h = (tab_w + pad) * Tab.numopts, tab_h
 
 
@@ -130,131 +131,10 @@ function GUI.Tabs:new(name, z, x, y, tab_w, tab_h, opts, pad)
 end
 
 
-
-
-function GUI.Tabs:update_sets(init)
-	
-	
-	local state = self.state
-	
-	if init then
-		self.z_sets = init
-	end
-	
-	if not self.z_sets then
-		reaper.ShowMessageBox("Tab class: No z sets found.", "Library error", 0)
-		GUI.quit = true
-		return 0
-	end
-	
-	local z_sets = self.z_sets	
-	for i = 1, #z_sets do
-		
-		if i ~= state then
-			for tab, z in pairs(z_sets[i]) do
-		
-				GUI.elms_hide[z] = true
-				
-			end
-		end
-	end
-	
-	for tab, z in pairs(z_sets[state]) do
-		
-		GUI.elms_hide[z] = false
-		
-	end
-	
-end
-
-
-function GUI.Tabs:val(newval)
-	
-	if newval then
-		self.state = newval
-		self.retval = self.state
-
-		self:update_sets()
-		GUI.redraw_z[self.z] = true
-	else
-		return self.state
-	end
-	
-end
-
-
-function GUI.Tabs:draw_tab(x, y, w, h, dir, font, col_txt, col_bg, lbl)
-
-	local dist = GUI.shadow_dist
-
-	GUI.color("shadow")
-
-	if dir == "u" then
-		
-		for i = 1, dist do
-			
-			gfx.rect(x + i, y, w, h, true)
-			
-			gfx.triangle(x + i, y, x + i, y + h, x + i - (h / 2), y + h)
-			gfx.triangle(x + i + w, y, x + i + w, y + h, x + i + w + (h / 2), y + h)
-			
-		end
-
-		-- Hide those gross, pixellated edges
-		gfx.line(x + dist, y, x + dist - (h / 2), y + h, 1)
-		gfx.line(x + dist + w, y, x + dist + w + (h / 2), y + h, 1)
-
-		GUI.color(col_bg)
-
-		gfx.rect(x, y, w, h, true)
-		
-		gfx.triangle(x, y, x, y + h, x - (h / 2), y + h)
-		gfx.triangle(x + w, y, x + w, y + h, x + w + (h / 2), y + h)
-		
-		gfx.line(x, y, x - (h / 2), y + h, 1)
-		gfx.line(x + w, y, x + w + (h / 2), y + h, 1)
-		
-	elseif dir == "d" then
-	
-		for i = 1, dist do
-			
-			gfx.rect(x + i, y, w, h, true)
-			
-			gfx.triangle(x + i, y + h, x + i, y, x + i - (h / 2), y)
-			gfx.triangle(x + i + w, y + h, x + i + w, y, x + i + w + (h / 2), y)
-			
-		end
-
-		-- Hide those gross, pixellated edges
-		gfx.line(x + dist, y + h, x + dist - (h / 2), y, 1)
-		gfx.line(x + dist + w, y + h, x + dist + w + (h / 2), y, 1)
-
-		GUI.color(col_bg)
-
-		gfx.rect(x, y, w, h, true)
-		
-		gfx.triangle(x, y + h, x, y, x - (h / 2), y)
-		gfx.triangle(x + w, y + h, x + w, y, x + w + (h / 2), y)
-		
-		gfx.line(x, y + h, x - (h / 2), y, 1)
-		gfx.line(x + w, y + h, x + w + (h / 2), y, 1)	
-	
-	
-	
-	end
-	
-	
-	-- Draw the tab's label
-	GUI.color(col_txt)
-	GUI.font(font)
-	
-	local str_w, str_h = gfx.measurestr(lbl)
-	gfx.x = x + ((w - str_w) / 2)
-	gfx.y = y + ((h - str_h) / 2) - 2 -- Don't include the bit we drew under the frame
-	gfx.drawstr(lbl)	
-	--gfx.line(x, y, x - (h / 2), y + h, 1)
-	--gfx.line(x + w, y, x + w + (h / 2), y + h, 1)
-
+function GUI.Tabs:init()
+    
+    self:update_sets()    
+    
 end
 
 
@@ -277,10 +157,10 @@ function GUI.Tabs:draw()
 
 		if i ~= state then
 			--											 
-			local btn_x, btn_y = x + GUI.shadow_dist + (i - 1) * x_adj, 
+			local tab_x, tab_y = x + GUI.shadow_dist + (i - 1) * x_adj, 
 								 y + GUI.shadow_dist * (dir == "u" and 1 or -1)
 
-			self:draw_tab(btn_x, btn_y, w, h, dir, font, self.col_txt, self.col_tab_b, optarray[i])
+			self:draw_tab(tab_x, tab_y, w, h, dir, font, self.col_txt, self.col_tab_b, optarray[i])
 
 		end
 	
@@ -295,16 +175,37 @@ function GUI.Tabs:draw()
 	GUI.color("wnd_bg")		
 	gfx.rect(self.x, self.y + (dir == "u" and h or -6), (self.w + self.h), 6, true)
 
-
 	
 end
 
 
--- Tabs - Mouse down.
+function GUI.Tabs:val(newval)
+	
+	if newval then
+		self.state = newval
+		self.retval = self.state
+
+		self:update_sets()
+		GUI.redraw_z[self.z] = true
+	else
+		return self.state
+	end
+	
+end
+
+
+
+
+------------------------------------
+-------- Input methods -------------
+------------------------------------
+
+
 function GUI.Tabs:onmousedown()
 
+    -- Offset for the first tab
 	local adj = 0.75*self.h
-	--See which option it's on
+
 	local mouseopt = (GUI.mouse.x - (self.x + adj)) / self.w
 		
 	mouseopt = GUI.clamp((math.floor(mouseopt * self.numopts) + 1), 1, self.numopts)
@@ -316,31 +217,31 @@ function GUI.Tabs:onmousedown()
 end
 
 
--- Tabs - Mouse up
 function GUI.Tabs:onmouseup()
 		
 	-- Set the new option, or revert to the original if the cursor isn't inside the list anymore
 	if GUI.IsInside(self, GUI.mouse.x, GUI.mouse.y) then
-		self.retval = self.state
-		
+        
+		self.retval = self.state		
 		self:update_sets()
 		
 	else
 		self.state = self.retval	
 	end
+    
 	GUI.redraw_z[self.z] = true	
+    
 end
 
 
--- Tabs - Dragging
 function GUI.Tabs:ondrag() 
 
 	self:onmousedown()
 	GUI.redraw_z[self.z] = true
+    
 end
 
 
--- Tabs - Mousewheel
 function GUI.Tabs:onwheel()
 
 	self.state = GUI.round(self.state + GUI.mouse.inc)
@@ -351,5 +252,104 @@ function GUI.Tabs:onwheel()
 	self.retval = self.state
 	self:update_sets()
 	GUI.redraw_z[self.z] = true
+    
 end
 
+
+
+
+------------------------------------
+-------- Drawing helpers -----------
+------------------------------------
+
+
+function GUI.Tabs:draw_tab(x, y, w, h, dir, font, col_txt, col_bg, lbl)
+
+	local dist = GUI.shadow_dist
+    local y1, y2 = table.unpack(dir == "u" and  {y, y + h}
+                                           or   {y + h, y})
+
+	GUI.color("shadow")
+
+    -- Tab shadow
+    for i = 1, dist do
+        
+        gfx.rect(x + i, y, w, h, true)
+        
+        gfx.triangle(   x + i, y1, 
+                        x + i, y2, 
+                        x + i - (h / 2), y2)
+        
+        gfx.triangle(   x + i + w, y1,
+                        x + i + w, y2,
+                        x + i + w + (h / 2), y2)
+
+    end
+
+    -- Hide those gross, pixellated edges
+    gfx.line(x + dist, y1, x + dist - (h / 2), y2, 1)
+    gfx.line(x + dist + w, y1, x + dist + w + (h / 2), y2, 1)
+
+    GUI.color(col_bg)
+
+    gfx.rect(x, y, w, h, true)
+
+    gfx.triangle(   x, y1,
+                    x, y2,
+                    x - (h / 2), y2)
+                    
+    gfx.triangle(   x + w, y1,
+                    x + w, y2,
+                    x + w + (h / 2), y + h)
+
+    gfx.line(x, y1, x - (h / 2), y2, 1)
+    gfx.line(x + w, y1, x + w + (h / 2), y2, 1)    
+    
+    
+	-- Draw the tab's label
+	GUI.color(col_txt)
+	GUI.font(font)
+	
+	local str_w, str_h = gfx.measurestr(lbl)
+	gfx.x = x + ((w - str_w) / 2)
+	gfx.y = y + ((h - str_h) / 2) - 2 -- Don't include the bit we drew under the frame
+	gfx.drawstr(lbl)	
+
+end
+
+
+
+
+------------------------------------
+-------- Tab helpers ---------------
+------------------------------------
+
+
+-- Updates visibility for any layers assigned to the tabs
+function GUI.Tabs:update_sets(init)
+    
+	local state = self.state
+	
+	if init then
+		self.z_sets = init
+	end
+
+	local z_sets = self.z_sets
+
+	if not z_sets or #z_sets[1] < 1 then
+		reaper.ShowMessageBox("GUI element '"..self.name.."':\nNo z sets found.", "Library error", 0)
+		GUI.quit = true
+		return 0
+	end
+
+	for i = 1, #z_sets do
+        
+        local hide = (i ~= state)
+        for tab, z in pairs(z_sets[i]) do
+            
+            GUI.elms_hide[z] = hide
+            
+        end
+	end
+
+end

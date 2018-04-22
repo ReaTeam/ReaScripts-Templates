@@ -50,10 +50,10 @@ if not GUI then
 end
 
 
-GUI.fonts.texteditor = {"Courier", 10}
+-- Managing text is MUCH easier with a monospace font.
+GUI.fonts.texteditor = {"Courier", 8}
 
 
--- TextEditor - New
 GUI.TextEditor = GUI.Element:new()
 function GUI.TextEditor:new(name, z, x, y, w, h, text, caption, pad)
 	
@@ -129,40 +129,47 @@ function GUI.TextEditor:init()
 end
 
 
--- TextEditor - Draw.
 function GUI.TextEditor:draw()
-	
-	
-	local x, y, w, h = self.x, self.y, self.w, self.h
-	
-	local caption = self.caption
-	local caret = self.caret
-	local focus = self.focus
-	local pad = self.pad
 
 	-- Some values can't be set in :init() because the window isn't
 	-- open yet - measurements won't work.
 	if not self.wnd_h then self:wnd_recalc() end
 	
 	-- Draw the caption
-	if caption and caption ~= "" then self:drawcaption() end
+	if self.caption and self.caption ~= "" then self:drawcaption() end
 	
 	-- Draw the background + frame
-	gfx.blit(self.buff, 1, 0, (focus and w or 0), 0, w, h, x, y)
+	gfx.blit(self.buff, 1, 0, (self.focus and self.w or 0), 0, 
+            self.w, self.h, self.x, self.y)
 
 	-- Draw the text
 	self:drawtext()
 	
 	-- Caret
 	-- Only needs to be drawn for half of the blink cycle
-	if focus and self.show_caret then self:drawcaret() end
+	if self.focus then
+       --[[
+        --Draw line highlight a la NP++ ??
+        GUI.color("elm_bg")
+        gfx.a = 0.2
+        gfx.mode = 1
+        
+        
+        gfx.mode = 0
+        gfx.a = 1
+       ]]--
 
-	-- Selection
-	if self.sel_s and self.sel_e then
-		
-		self:drawselection()
-		
-	end
+        -- Selection
+        if self.sel_s and self.sel_e then
+            
+            self:drawselection()
+            
+        end     
+       
+        if self.show_caret then self:drawcaret() end
+        
+    end
+
 
 	-- Scrollbars
 	self:drawscrollbars()
@@ -170,7 +177,6 @@ function GUI.TextEditor:draw()
 end
 
 
--- TextEditor - Get/set value
 function GUI.TextEditor:val(newval)
 	
 	if newval then
@@ -184,7 +190,6 @@ function GUI.TextEditor:val(newval)
 end
 
 
--- Make the caret blink, if focused
 function GUI.TextEditor:onupdate()
 
 	if self.focus then
@@ -210,6 +215,8 @@ function GUI.TextEditor:lostfocus()
 end
 
 
+
+
 -----------------------------------
 -------- Input methods ------------
 -----------------------------------
@@ -222,56 +229,38 @@ function GUI.TextEditor:onmousedown(scroll)
 	-- If over the scrollbar, or we came from :ondrag with an origin point
 	-- that was over the scrollbar...
 	local scroll = scroll or self:overscrollbar()
-	if scroll then
-		
-		-- Vertical scroll
-		if scroll == "v" then
-			
-			local len = self:getwndlength()
-			local wnd_c = GUI.round( ((GUI.mouse.y - self.y) / self.h) * len  )
-			self.wnd_pos.y = GUI.round(
-								GUI.clamp(	1, 
-											wnd_c - (self.wnd_h / 2), 
-											len - self.wnd_h + 1
-										)
-										)
-										
-		-- Horizontal scroll	
-		else
-			
-			local len = self:getmaxwidth()
-			local wnd_c = GUI.round( ((GUI.mouse.x - self.x) / self.w) * len   )
-			self.wnd_pos.x = GUI.round(
-								GUI.clamp(	0,
-											wnd_c - (self.wnd_w / 2),
-											len - self.wnd_w
-										)
-										)
-				
-		end
-		
-		GUI.redraw_z[self.z] = true
-	
-	-- Shift+click to select text
-	elseif GUI.mouse.cap & 8 == 8 and self.caret then
-			
-			self.sel_s = {x = self.caret.x, y = self.caret.y}
-			self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
-			self.sel_e = {x = self.caret.x, y = self.caret.y}
-	
-	-- Place the caret
-	else
-	
-		self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
-		self:clearselection()
-	
-	end
+	if scroll then 
+        
+        self:setscrollbar(scroll)        
+        
+    else
+    
+        -- Place the caret
+        self.caret = self:getcaret(GUI.mouse.x, GUI.mouse.y)
+        
+        -- Reset the caret so the visual change isn't laggy
+        self.blink = 0      
+        
+        -- Shift+click to select text
+        if GUI.mouse.cap & 8 == 8 and self.caret then
+                
+                self.sel_s = {x = self.caret.x, y = self.caret.y}			
+                self.sel_e = {x = self.caret.x, y = self.caret.y}
+
+        else
+
+            self:clearselection()
+        
+        end
+        
+    end
+    
+    GUI.redraw_z[self.z] = true    
 	
 end
 
 
 function GUI.TextEditor:ondoubleclick()
-	
 	
 	self:selectword()
 	
@@ -300,8 +289,10 @@ end
 
 function GUI.TextEditor:ontype()
 
+    local char = GUI.char
+
 	-- Non-typeable / navigation chars
-	if self.keys[GUI.char] then
+	if self.keys[char] then
 		
 		local shift = GUI.mouse.cap & 8 == 8
 		
@@ -311,9 +302,9 @@ function GUI.TextEditor:ontype()
 		
 		-- Flag for some keys (clipboard shortcuts) to skip
 		-- the next section
-		local bypass = self.keys[GUI.char](self)
+        local bypass = self.keys[char](self)
 		
-		if shift and GUI.char ~= (GUI.chars.BACKSPACE) then
+		if shift and char ~= (GUI.chars.BACKSPACE) then
 			
 			self.sel_e = {x = self.caret.x, y = self.caret.y}
 			
@@ -324,12 +315,13 @@ function GUI.TextEditor:ontype()
 		end
 
 	-- Typeable chars
-	elseif GUI.clamp(32, GUI.char, 254) == GUI.char then
+	elseif GUI.clamp(32, char, 254) == char then
 		
 		if self.sel_s then self:deleteselection() end
 		
-		self:insertchar(GUI.char)
-		self:clearselection()
+		self:insertchar(char)
+        -- Why are we doing this when the selection was just deleted?
+		--self:clearselection()
 	
 		
 	end
@@ -365,7 +357,7 @@ function GUI.TextEditor:onwheel(inc)
 	-- Shift -- Horizontal scroll
 	elseif GUI.mouse.cap & 8 == 8 then
 	
-		local len = self:getmaxwidth()
+		local len = self:getmaxlength()
 		
 		if len <= self.wnd_w then return end
 
@@ -389,6 +381,8 @@ function GUI.TextEditor:onwheel(inc)
 	GUI.redraw_z[self.z] = true
 	
 end
+
+
 
 
 ------------------------------------
@@ -463,7 +457,7 @@ function GUI.TextEditor:drawselection()
 	gfx.mode = 1
 	
 	-- Get all the selection boxes that need to be drawn
-	local coords = self:checkselection()	
+	local coords = self:getselection()	
 	
 	for i = 1, #coords do
 	
@@ -480,6 +474,7 @@ function GUI.TextEditor:drawselection()
 			w =		(coords[i].w + (self.wnd_pos.x > 0 and 1 or 0)) * self.char_w
 			
 			-- Keep the selection from spilling out past the scrollbar
+            -- ***recheck this, the self.x doesn't make sense***
 			w = math.min(w, self.x + self.w - x - self.pad)
 			
 			h =	self.char_h
@@ -502,7 +497,7 @@ end
 function GUI.TextEditor:drawscrollbars()
 
 	-- Do we need to be here?
-	local max_w = self:getmaxwidth()
+	local max_w = self:getmaxlength()
 	local vert, horz = 	self:getwndlength() > self.wnd_h,
 						max_w > self.wnd_w
 	if not (vert or horz) then return end
@@ -510,7 +505,7 @@ function GUI.TextEditor:drawscrollbars()
 	local x, y, w, h = self.x, self.y, self.w, self.h
 	local vx, vy, vw, vh = x + w - 8 - 4, y + 4, 8, h - 16
 	local hx, hy, hw, hh = x + 4, y + h - 8 - 4, w - 16, 8
-	local fade_w = 15
+	local fade_w = 16
 	local _
 	
 	-- Draw a gradient to fade out the last ~16px of text
@@ -577,13 +572,15 @@ function GUI.TextEditor:drawscrollbars()
 end
 
 
+
+
 ------------------------------------
 -------- Selection methods ---------
 ------------------------------------
 
 
--- Figure out what portion of the selection, if any, needs to be drawn
-function GUI.TextEditor:checkselection()
+-- Figure out what portions of the text are selected
+function GUI.TextEditor:getselection()
 
 	local sx, sy = self.sel_s.x, self.sel_s.y
 	local ex, ey = self.sel_e.x, self.sel_e.y
@@ -659,9 +656,10 @@ end
 -- Make sure at least part of this selection block is within the window
 function GUI.TextEditor:selectionvisible(coords)
 
-	return 		coords.w > 0 
-			and coords.x + coords.w > self.wnd_pos.x 
-			and coords.y >= self.wnd_pos.y 
+	return 		coords.w > 0                            -- Selection has width,
+			and coords.x + coords.w > self.wnd_pos.x    -- doesn't end to the left
+            and coords.x < self:wnd_right()             -- doesn't start to the right
+			and coords.y >= self.wnd_pos.y              -- and is on a visible line
 			and coords.y < self:wnd_bottom()
 
 end
@@ -698,8 +696,7 @@ end
 
 function GUI.TextEditor:clearselection()
 
-	self.sel_s = nil
-	self.sel_e = nil
+	self.sel_s, self.sel_e = nil, nil
 	
 end
 
@@ -710,7 +707,7 @@ function GUI.TextEditor:deleteselection()
 	
 	local sx, sy, ex, ey = self.sel_s.x, self.sel_s.y, self.sel_e.x, self.sel_e.y
 
-	self:setundostate()
+	self:storeundostate()
 
 	-- Make sure the Start is before the End
 	if sy > ey then
@@ -722,11 +719,13 @@ function GUI.TextEditor:deleteselection()
 	-- Easiest case; single line
 	if sy == ey then
 		
-		self.retval[sy] = string.sub(self.retval[sy] or "", 1, sx)..string.sub(self.retval[sy] or "", ex + 1)
+		self.retval[sy] =   string.sub(self.retval[sy] or "", 1, sx)..
+                            string.sub(self.retval[sy] or "", ex + 1)
 		
 	else
 	
-		self.retval[sy] = string.sub(self.retval[sy] or "", 1, sx)..string.sub(self.retval[ey] or "", ex + 1)
+		self.retval[sy] =   string.sub(self.retval[sy] or "", 1, sx)..
+                            string.sub(self.retval[ey] or "", ex + 1)
 		for i = sy + 1, ey do
 			table.remove(self.retval, sy + 1)
 		end
@@ -741,7 +740,7 @@ function GUI.TextEditor:deleteselection()
 end
 
 
-function GUI.TextEditor:getselection()
+function GUI.TextEditor:getselectedtext()
 
 	local sx, sy, ex, ey = self.sel_s.x, self.sel_s.y, self.sel_e.x, self.sel_e.y
 	
@@ -766,6 +765,8 @@ function GUI.TextEditor:getselection()
 	return table.concat(tmp, "\n")	
 	
 end
+
+
 
 
 ------------------------------------
@@ -803,7 +804,7 @@ end
 
 
 -- Get the length of the longest line
-function GUI.TextEditor:getmaxwidth()
+function GUI.TextEditor:getmaxlength()
 	
 	local w = 0
 	
@@ -818,7 +819,7 @@ function GUI.TextEditor:getmaxwidth()
 end
 
 
--- Add 1 to the table length so the horizontal scrollbar is never in the way
+-- Add 2 to the table length so the horizontal scrollbar isn't in the way
 function GUI.TextEditor:getwndlength()
 	
 	return #self.retval + 2
@@ -875,7 +876,8 @@ function GUI.TextEditor:getcaret(x, y)
 
 	local tmp = {}	
 		
-	tmp.x = math.floor(		((x - self.x) / self.w ) * self.wnd_w) + self.wnd_pos.x
+	tmp.x = math.floor(		((x - self.x) / self.w ) * self.wnd_w) 
+                            + self.wnd_pos.x
 	tmp.y = math.floor(		(y - (self.y + self.pad)) 
 						/	self.char_h)
 			+ self.wnd_pos.y
@@ -897,13 +899,45 @@ function GUI.TextEditor:overscrollbar(x, y)
 		
 		return "v"
 		
-	elseif 	self:getmaxwidth() > self.wnd_w
+	elseif 	self:getmaxlength() > self.wnd_w
 	and		(y or GUI.mouse.y) >= (self.y + self.h - 12) then
 	
 		return "h"
 		
 	end
 	
+end
+
+
+function GUI.TextEditor:setscrollbar(scroll)
+
+    -- Vertical scroll
+    if scroll == "v" then
+        
+        local len = self:getwndlength()
+        local wnd_c = GUI.round( ((GUI.mouse.y - self.y) / self.h) * len  )
+        self.wnd_pos.y = GUI.round(
+                            GUI.clamp(	1, 
+                                        wnd_c - (self.wnd_h / 2), 
+                                        len - self.wnd_h + 1
+                                    )
+                                    )
+                                    
+    -- Horizontal scroll	
+    else
+        
+        local len = self:getmaxlength()
+        local wnd_c = GUI.round( ((GUI.mouse.x - self.x) / self.w) * len   )
+        self.wnd_pos.x = GUI.round(
+                            GUI.clamp(	0,
+                                        wnd_c - (self.wnd_w / 2),
+                                        len - self.wnd_w
+                                    )
+                                    )
+    
+    end
+    
+    
 end
 
 
@@ -929,17 +963,13 @@ end
 -- Insert a string at the caret, deleting any existing selection
 -- i.e. Paste
 function GUI.TextEditor:insertstring(str, move_caret)
-	
-	local sx, sy = 	(self.sel_s and self.sel_s.x or self.caret.x), 
-					(self.sel_s and self.sel_s.y or self.caret.y)
 
-	self:setundostate()
+	self:storeundostate()
 
-	if self.sel_s then 
-		self:deleteselection()
-		sx, sy = self.caret.x, self.caret.y
-	end
-	
+	if self.sel_s then self:deleteselection() end
+
+    local sx, sy = self.caret.x, self.caret.y
+
 	local tmp = self:stringtotable(str)
 	
 	local pre, post =	string.sub(self.retval[sy] or "", 1, sx),
@@ -973,10 +1003,12 @@ end
 -- Insert typeable characters
 function GUI.TextEditor:insertchar(char)
 
-	self:setundostate()
+	self:storeundostate()
 	
 	local str = self.retval[self.caret.y] or ""
-	local a, b = str:sub(1, self.caret.x), str:sub(self.caret.x + (self.insert_caret and 2 or 1))
+    
+	local a, b = str:sub(1, self.caret.x), 
+                 str:sub(self.caret.x + (self.insert_caret and 2 or 1))
 	self.retval[self.caret.y] = a..string.char(char)..b
 	self.caret.x = self.caret.x + 1
     	
@@ -985,11 +1017,14 @@ end
 
 -- Place the caret at the end of the current line
 function GUI.TextEditor:carettoend()
-		
+	--[[	
 	return #(self.retval[self.caret.y] or "") > 0
 		and #self.retval[self.caret.y]
 		or 0
-	
+	]]--
+    
+    return string.len(self.retval[self.caret.y] or "")
+    
 end
 
 
@@ -1082,7 +1117,7 @@ GUI.TextEditor.keys = {
 	
 	[GUI.chars.BACKSPACE] = function(self)
 	
-		self:setundostate()		
+		self:storeundostate()		
 	
 		-- Is there a selection?
 		if self.sel_s and self.sel_e then
@@ -1093,7 +1128,8 @@ GUI.TextEditor.keys = {
 		elseif self.caret.x > 0 then
 			
 			local str = self.retval[self.caret.y]
-			self.retval[self.caret.y] = str:sub(1, self.caret.x - 1)..str:sub(self.caret.x + 1, -1)
+			self.retval[self.caret.y] = str:sub(1, self.caret.x - 1)..
+                                        str:sub(self.caret.x + 1, -1)
 			self.caret.x = self.caret.x - 1
 		
 		-- Beginning of the line; backspace the contents to the prev. line
@@ -1110,7 +1146,8 @@ GUI.TextEditor.keys = {
 	
 	[GUI.chars.TAB] = function(self)
 		
-		self:insertchar(9)
+        -- Disabled until Reaper supports this properly
+		--self:insertchar(9)
 		
 	end,
 	
@@ -1123,7 +1160,7 @@ GUI.TextEditor.keys = {
 	
 	[GUI.chars.DELETE] = function(self)
 		
-		self:setundostate()
+		self:storeundostate()
 
 		-- Is there a selection?
 		if self.sel_s then
@@ -1134,11 +1171,13 @@ GUI.TextEditor.keys = {
 		elseif self.caret.x < self:carettoend() then
 		
 			local str = self.retval[self.caret.y] or ""
-			self.retval[self.caret.y] = str:sub(1, self.caret.x) .. str:sub(self.caret.x + 2)
+			self.retval[self.caret.y] = str:sub(1, self.caret.x) .. 
+                                        str:sub(self.caret.x + 2)
 		
 		elseif self.caret.y < self:getwndlength() then
 		
-			self.retval[self.caret.y] = self.retval[self.caret.y] .. (self.retval[self.caret.y + 1] or "")
+			self.retval[self.caret.y] = self.retval[self.caret.y] .. 
+                                        (self.retval[self.caret.y + 1] or "")
 			table.remove(self.retval, self.caret.y + 1)
 			
 		end
@@ -1147,7 +1186,7 @@ GUI.TextEditor.keys = {
 	
 	[GUI.chars.RETURN] = function(self)
 		
-		self:setundostate()
+		self:storeundostate()
 
 		if sel_s then self:deleteselection() end
 		
@@ -1182,7 +1221,7 @@ GUI.TextEditor.keys = {
 			
 			if self.sel_s and self:SWS_clipboard() then
 				
-				local str = self:getselection()
+				local str = self:getselectedtext()
 				reaper.CF_SetClipboard(str)
 				
 			end
@@ -1229,7 +1268,7 @@ GUI.TextEditor.keys = {
 			
 			if self.sel_s and self:SWS_clipboard() then
 				
-				local str = self:getselection()
+				local str = self:getselectedtext()
 				reaper.CF_SetClipboard(str)
 				self:deleteselection()
 				
@@ -1306,7 +1345,7 @@ function GUI.TextEditor:redo()
 end
 
 
-function GUI.TextEditor:setundostate()
+function GUI.TextEditor:storeundostate()
 
 	table.insert(self.undo_states, self:geteditorstate() )
 	if #self.undo_states > self.undo_limit then table.remove(self.undo_states, 1) end

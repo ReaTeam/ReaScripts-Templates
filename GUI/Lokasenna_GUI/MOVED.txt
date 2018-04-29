@@ -1,0 +1,4 @@
+Lokasenna_GUI is now hosted in its own repository:
+https://github.com/jalovatt/Lokasenna_GUI
+
+Cheers.

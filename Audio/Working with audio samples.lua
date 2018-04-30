@@ -80,6 +80,9 @@ local function IterateSamples(item, take, samplerate)
     local samplebuffer = reaper.new_array(block_size * 1)
     local audio = reaper.CreateTakeAudioAccessor(take)
 
+    -- Not important; just for benchmarking
+    local t1 = reaper.time_precise()
+    local num_samples = 0
 
     -- Loop through the audio, one block at a time
     local starttime_sec = range_start
@@ -103,12 +106,17 @@ local function IterateSamples(item, take, samplerate)
             -------- with the sample here ------
             ------------------------------------
 
+            num_samples = num_samples + 1
             
         end
         
         starttime_sec = starttime_sec + (65536 / samplerate)
 
     end
+    
+    
+    reaper.ShowConsoleMsg("iterated over "..tostring(num_samples).." samples\nin "..
+    (reaper.time_precise() - t1).." seconds")
     
 
     -- Tell Reaper we're done working with this item, so the memory can be freed
@@ -124,8 +132,6 @@ local function IterateSamples(item, take, samplerate)
     
     -- Item changes frequently don't prompt Reaper to redraw automatically
     reaper.UpdateTimeline()
-    
-    reaper.ShowConsoleMsg("All done!")
     
 end
 

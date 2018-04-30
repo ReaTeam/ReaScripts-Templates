@@ -19,7 +19,8 @@ function IterateSamples(item, take, samplerate)
         attTime1, relTime1, attTime2, relTime2, ga1, gr1, ga2, gr2, envOut1, envOut2
         item_start, item_len, sel_start, sel_end, playrate, range_start, range_len, range_end, range_len_smpls,
         block_size, n_blocks, rest_smples, mrk,
-        AA, starttime_sec, samplebuffer, cur_block, smpl, input, mrk_pos, retrig_cnt)
+        AA, starttime_sec, samplebuffer, cur_block, smpl, input, mrk_pos, retrig_cnt,
+        t1,num_samples)
     (      
     
     // Sort out the selection range
@@ -65,6 +66,8 @@ function IterateSamples(item, take, samplerate)
         samplebuffer = 0;
         cur_block = 0;
         
+        t1 = time_precise();
+        num_samples = 0;
 
         // Loop through the audio, one block at a time
         loop(n_blocks+1,
@@ -89,6 +92,7 @@ function IterateSamples(item, take, samplerate)
                 //  with the sample here
                 //
                 //
+                num_samples += 1;
                 
                 smpl+=1;  
                 
@@ -99,6 +103,14 @@ function IterateSamples(item, take, samplerate)
             cur_block+=1;
             
         );
+        
+        t1 = time_precise() - t1;
+        ShowConsoleMsg("Iterated over ");
+        ShowConsoleMsg( sprintf(#, "%f", num_samples); );
+        ShowConsoleMsg(" samples\nin ");
+        ShowConsoleMsg(sprintf(#, "%f", t1); );
+        ShowConsoleMsg(" seconds");
+        
         
         // Tell Reaper we're done working with this item, so the memory can be freed
         DestroyAudioAccessor(AA);
@@ -112,8 +124,6 @@ function IterateSamples(item, take, samplerate)
     
         UpdateTimeline();
     );          
-        
-    ShowConsoleMsg("All done")
 
 );
 

@@ -5,23 +5,39 @@
     
 */
 
-item = GetSelectedMediaItem(0, 0);
-take = GetActiveTake(item);
-PCM_source = GetMediaItemTake_Source(take);
-samplerate = GetMediaSourceSampleRate(PCM_source);
+function Msg(str)(
+    ShowConsoleMsg( str );
+    ShowConsoleMsg( "\n");
+);
+
+function NumToString(num)(
+    sprintf(#, "%.3f", num);
+);
+
 
 
 // Perform some sort of action based on the audio in the selected take
 // (within the current time selection, if any)
-function IterateSamples(item, take, samplerate)
+function IterateSamples()
 
-    local(Threshold_dB, Sensitivity_dB, Retrig_sec,  Threshold, Sensitivity, Retrig, 
+    local(item, take, PCM_source, samplerate, n_channels,
+        Threshold_dB, Sensitivity_dB, Retrig_sec,  Threshold, Sensitivity, Retrig, 
         attTime1, relTime1, attTime2, relTime2, ga1, gr1, ga2, gr2, envOut1, envOut2
         item_start, item_len, sel_start, sel_end, playrate, range_start, range_len, range_end, range_len_smpls,
         block_size, n_blocks, rest_smples, mrk,
-        AA, starttime_sec, samplebuffer, cur_block, smpl, input, mrk_pos, retrig_cnt,
-        t1,num_samples)
+        AA, starttime_sec, samplebuffer, cur_block, i, j, spl,
+        t1, t2, num_samples)
     (      
+    
+
+    // Basic item info
+    item = GetSelectedMediaItem(0, 0);
+    take = GetActiveTake(item);
+    PCM_source = GetMediaItemTake_Source(take);
+    samplerate = GetMediaSourceSampleRate(PCM_source);
+    
+    Msg("Sample rate: ");
+    Msg( NumToString(samplerate); );    
     
     // Sort out the selection range
     item_start = GetMediaItemInfo_Value(item, "D_POSITION");
@@ -59,6 +75,11 @@ function IterateSamples(item, take, samplerate)
         n_blocks = floor(range_len_smpls/block_size); 
         rest_smples = range_len_smpls - block_size*n_blocks;
         
+        // Allow for multichannel audio
+        n_channels = GetMediaSourceNumChannels(PCM_source);
+        
+        Msg("Channels: ");
+        Msg( NumToString(n_channels); );
         
         // 'samplebuffer' will hold all of the audio data for each block
         AA = CreateTakeAudioAccessor(take);
@@ -68,6 +89,8 @@ function IterateSamples(item, take, samplerate)
         
         t1 = time_precise();
         num_samples = 0;
+        
+        Msg("\nIterating...");
 
         // Loop through the audio, one block at a time
         loop(n_blocks+1,
@@ -76,40 +99,50 @@ function IterateSamples(item, take, samplerate)
             cur_block == n_blocks ? block_size = rest_smples;
             
             // EEL doesn't have dynamic arrays, so we have to specify how much memory to use
-            memset(0,0,block_size);
+            memset(0,0,block_size * n_channels);
             
             // Loads 'samplebuffer' with the next block
-            GetAudioAccessorSamples(AA, samplerate, 1, starttime_sec, block_size, samplebuffer);
+            GetAudioAccessorSamples(AA, samplerate, n_channels, starttime_sec, block_size, samplebuffer);
             
-            smpl=0;
+            i=0;
             loop(block_size,
             
-                spl = samplebuffer[smpl];
+                // Loop through each channel separately
+                j=1;
+                loop(n_channels,
                 
-                //
-                //
-                //  Do whatever you want
-                //  with the sample here
-                //
-                //
-                num_samples += 1;
+                    spl = samplebuffer[i * j];
+
+
+                    //
+                    //
+                    //  Do whatever you want
+                    //  with the sample here
+                    //
+                    //
+                    num_samples += 1;
                 
-                smpl+=1;  
+                    j+=1;
+                );
+                
+                i+=1;  
                 
             );
             
             // Increment our position and block number
-            starttime_sec+=65536/samplerate;
+            starttime_sec+=(block_size * n_channels)/samplerate;
             cur_block+=1;
             
         );
         
-        t1 = time_precise() - t1;
-        ShowConsoleMsg("Iterated over ");
-        ShowConsoleMsg( sprintf(#, "%f", num_samples); );
-        ShowConsoleMsg(" samples\nin ");
-        ShowConsoleMsg(sprintf(#, "%f", t1); );
-        ShowConsoleMsg(" seconds");
+        Msg("Done!\n");
+        
+        t2 = time_precise() - t1;
+        Msg("Iterated over ");
+        Msg( NumToString(num_samples); );
+        Msg(" samples\nin ");
+        Msg( NumToString(t2); );
+        Msg(" seconds");
         
         
         // Tell Reaper we're done working with this item, so the memory can be freed
@@ -128,7 +161,5 @@ function IterateSamples(item, take, samplerate)
 );
 
 
-
-// Quick error check, and then run the function
-samplerate ? ( IterateSamples(item, take, samplerate); );
+IterateSamples();
         

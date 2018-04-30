@@ -10,6 +10,7 @@ local function Msg(str)
 end
 
 
+
 -- Perform some sort of action based on the audio in the selected take
 -- (within the current time selection, if any)
 local function IterateSamples()
@@ -117,27 +118,21 @@ local function IterateSamples()
         GetSamples(audio, samplerate, n_channels, starttime_sec, block_size, samplebuffer)
 
         local spl
-        for i = 1, block_size * n_channels do
+        for i = 1, block_size do
             
-            spl = samplebuffer[i]
-            
-            --[[
-                    Do whatever you want with the sample here
+            -- Loop through each channel separately
+            for j = 1, n_channels do
                 
-                    For multichannel audio, samples will be interleaved, i.e.
-                    
-                    Stereo:         Four channel:
-                    
-                    1               1
-                        2               2
-                    3                       3
-                        4                       4
-                    5               5
-                        6               6
+                spl = samplebuffer[i * j]
                 
-            ]]--
+                ------------------------------------
+                -------- Do stuff with the ---------
+                -------- the sample here -----------
+                ------------------------------------
 
-            num_samples = num_samples + 1
+                num_samples = num_samples + 1
+                
+            end
             
         end
         

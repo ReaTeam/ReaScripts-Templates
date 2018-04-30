@@ -5,27 +5,39 @@
     
 ]]--
 
-local item = reaper.GetSelectedMediaItem(0, 0)
-
-if not item then
-    reaper.MB("No item selected", "Oops", 0)
-    return
-end
-
-local take = reaper.GetActiveTake(item)
-local PCM_source = reaper.GetMediaItemTake_Source(take)
-local samplerate = reaper.GetMediaSourceSampleRate(PCM_source)
-
-if not samplerate then
-    reaper.MB("Couldn't access the item. Maybe it's not audio?", "Oops", 0)
-    return
+local function Msg(str)
+   reaper.ShowConsoleMsg(tostring(str).."\n") 
 end
 
 
 -- Perform some sort of action based on the audio in the selected take
 -- (within the current time selection, if any)
-local function IterateSamples(item, take, samplerate)
+local function IterateSamples()
 
+
+    ------------------------------------
+    -------- Basic item info -----------
+    ------------------------------------
+    
+    
+    local item = reaper.GetSelectedMediaItem(0, 0)
+
+    if not item then
+        reaper.MB("No item selected", "Oops", 0)
+        return nil
+    end
+
+    local take = reaper.GetActiveTake(item)
+    local PCM_source = reaper.GetMediaItemTake_Source(take)
+    local samplerate = reaper.GetMediaSourceSampleRate(PCM_source)
+
+    if not samplerate then
+        reaper.MB("Couldn't access the item. Maybe it's not audio?", "Oops", 0)
+        return nil
+    end
+
+    Msg("Sample rate: "..samplerate)
+    
 
     ------------------------------------
     -------- Prepping some values ------
@@ -70,19 +82,27 @@ local function IterateSamples(item, take, samplerate)
     local range_end = range_start + range_len
     local range_len_spls = math.floor(range_len * samplerate)
 
+
     -- Break the range into blocks
     local block_size = 65536    
     local n_blocks = math.floor(range_len_spls / block_size)
     local extra_spls = range_len_spls - block_size * n_blocks
 
+    -- Allow for multichannel audio
+    local n_channels = reaper.GetMediaSourceNumChannels(PCM_source)    
+
+    Msg("Channels: "..n_channels)
 
     -- 'samplebuffer' will hold all of the audio data for each block
-    local samplebuffer = reaper.new_array(block_size * 1)
+    local samplebuffer = reaper.new_array(block_size * n_channels)
     local audio = reaper.CreateTakeAudioAccessor(take)
+
 
     -- Not important; just for benchmarking
     local t1 = reaper.time_precise()
     local num_samples = 0
+
+    Msg("\nIterating...")
 
     -- Loop through the audio, one block at a time
     local starttime_sec = range_start
@@ -94,29 +114,41 @@ local function IterateSamples(item, take, samplerate)
         samplebuffer.clear()
         
         -- Loads 'samplebuffer' with the next block
-        GetSamples(audio, samplerate, 1, starttime_sec, block_size, samplebuffer)
+        GetSamples(audio, samplerate, n_channels, starttime_sec, block_size, samplebuffer)
 
         local spl
-        for i = 1, block_size do
+        for i = 1, block_size * n_channels do
             
             spl = samplebuffer[i]
             
-            ------------------------------------
-            -------- Do whatever you want ------
-            -------- with the sample here ------
-            ------------------------------------
+            --[[
+                    Do whatever you want with the sample here
+                
+                    For multichannel audio, samples will be interleaved, i.e.
+                    
+                    Stereo:         Four channel:
+                    
+                    1               1
+                        2               2
+                    3                       3
+                        4                       4
+                    5               5
+                        6               6
+                
+            ]]--
 
             num_samples = num_samples + 1
             
         end
         
-        starttime_sec = starttime_sec + (65536 / samplerate)
+        starttime_sec = starttime_sec + ((block_size * n_channels) / samplerate)
 
     end
     
+    Msg("Done!\n")
     
-    reaper.ShowConsoleMsg("iterated over "..tostring(num_samples).." samples\nin "..
-    (reaper.time_precise() - t1).." seconds")
+    Msg("Iterated over "..tostring(num_samples).." samples")
+    Msg("Elapsed time: "..(reaper.time_precise() - t1).." seconds")
     
 
     -- Tell Reaper we're done working with this item, so the memory can be freed
@@ -133,6 +165,9 @@ local function IterateSamples(item, take, samplerate)
     -- Item changes frequently don't prompt Reaper to redraw automatically
     reaper.UpdateTimeline()
     
+    -- We don't seem to have had any errors, so...
+    return true
+    
 end
 
-IterateSamples(item, take, samplerate)
+IterateSamples()

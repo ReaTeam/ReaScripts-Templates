@@ -8,7 +8,7 @@
 item = GetSelectedMediaItem(0, 0);
 take = GetActiveTake(item);
 PCM_source = GetMediaItemTake_Source(take);
-srate = GetMediaSourceSampleRate(PCM_source);
+samplerate = GetMediaSourceSampleRate(PCM_source);
 
 
 // Perform some sort of action based on the audio in the selected take
@@ -52,7 +52,7 @@ function IterateSamples(item, take, samplerate)
         range_start = (sel_start-item_start)*playrate;
         range_len = (sel_end-sel_start)*playrate;
         range_end = range_start+range_len;
-        range_len_smpls = floor(range_len*srate);
+        range_len_smpls = floor(range_len*samplerate);
         
         // Break the range into blocks
         block_size = 65536;
@@ -79,7 +79,7 @@ function IterateSamples(item, take, samplerate)
             memset(0,0,block_size);
             
             // Loads 'samplebuffer' with the next block
-            GetAudioAccessorSamples(AA, srate, 1, starttime_sec, block_size, samplebuffer);
+            GetAudioAccessorSamples(AA, samplerate, 1, starttime_sec, block_size, samplebuffer);
             
             smpl=0;
             loop(block_size,
@@ -99,7 +99,7 @@ function IterateSamples(item, take, samplerate)
             );
             
             // Increment our position and block number
-            starttime_sec+=65536/srate;
+            starttime_sec+=65536/samplerate;
             cur_block+=1;
             
         );
@@ -130,5 +130,5 @@ function IterateSamples(item, take, samplerate)
 
 
 // Quick error check, and then run the function
-srate ? ( IterateSamples(item, take, samplerate); );
+samplerate ? ( IterateSamples(item, take, samplerate); );
         

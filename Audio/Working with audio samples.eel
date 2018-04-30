@@ -71,7 +71,7 @@ function IterateSamples(item, take, samplerate)
 
         // Loop through the audio, one block at a time
         loop(n_blocks+1,
-        
+
             // The last iteration will almost never be a full block
             cur_block == n_blocks ? block_size = rest_smples;
             
@@ -84,7 +84,7 @@ function IterateSamples(item, take, samplerate)
             smpl=0;
             loop(block_size,
             
-                spl = samplebuffer[smpl]; // abs sample value(abs envelope)
+                spl = samplebuffer[smpl];
                 
                 //
                 //

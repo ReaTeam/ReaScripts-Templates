@@ -125,6 +125,8 @@ local function IterateSamples(item, take, samplerate)
     -- Item changes frequently don't prompt Reaper to redraw automatically
     reaper.UpdateTimeline()
     
+    reaper.ShowConsoleMsg("All done!")
+    
 end
 
-IterateSamples()
+IterateSamples(item, take, samplerate)

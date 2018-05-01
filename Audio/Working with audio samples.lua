@@ -105,6 +105,13 @@ local function IterateSamples()
 
     Msg("\nIterating...")
 
+    --[[
+    -- Output file for testing
+    local info = debug.getinfo(1,'S');
+    local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
+    local file = io.open(script_path.."sample dump.txt", "w")
+    ]]--
+    
     -- Loop through the audio, one block at a time
     local starttime_sec = range_start
     for cur_block = 0, n_blocks do
@@ -112,18 +119,21 @@ local function IterateSamples()
         -- The last iteration will almost never be a full block
         if cur_block == n_blocks then block_size = extra_spls end
         
-        samplebuffer.clear()
+        samplebuffer.clear()    
         
         -- Loads 'samplebuffer' with the next block
         GetSamples(audio, samplerate, n_channels, starttime_sec, block_size, samplebuffer)
 
-        local spl
         for i = 1, block_size do
             
             -- Loop through each channel separately
             for j = 1, n_channels do
                 
                 spl = samplebuffer[i * j]
+            
+                -- Get the time (in the item) of the current sample
+                -- * I don't think this will work for playrate ~= ! *
+                -- local pos = starttime_sec + (i / samplerate)
                 
                 ------------------------------------
                 -------- Do stuff with the ---------
@@ -140,6 +150,8 @@ local function IterateSamples()
 
     end
     
+    -- if file then io.close() end
+
     Msg("Done!\n")
     
     Msg("Iterated over "..tostring(num_samples).." samples")

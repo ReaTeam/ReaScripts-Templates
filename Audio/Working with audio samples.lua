@@ -105,13 +105,7 @@ local function IterateSamples()
 
     Msg("\nIterating...")
 
-    --[[
-    -- Output file for testing
-    local info = debug.getinfo(1,'S');
-    local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
-    local file = io.open(script_path.."sample dump.txt", "w")
-    ]]--
-    
+
     -- Loop through the audio, one block at a time
     local starttime_sec = range_start
     for cur_block = 0, n_blocks do
@@ -124,22 +118,44 @@ local function IterateSamples()
         -- Loads 'samplebuffer' with the next block
         GetSamples(audio, samplerate, n_channels, starttime_sec, block_size, samplebuffer)
 
-        for i = 1, block_size do
-            
-            -- Loop through each channel separately
-            for j = 1, n_channels do
+        -- Loop through each channel separately
+        for i = 1, n_channels do
+
+            for j = 1, block_size do
                 
-                spl = samplebuffer[i * j]
-            
-                -- Get the time (in the item) of the current sample
-                -- * I don't think this will work for playrate ~= ! *
-                -- local pos = starttime_sec + (i / samplerate)
+                -- Sample position in the block
+                local pos = (j - 1) * n_channels + i   
+                
+                local spl = samplebuffer[pos] 
+                
+                --[[
+                    The algorithm here should iterate through all the samples in
+                    one channel of a block, then the next, etc, until the end of
+                    the block is reached. Then it should move to the next block
+                    and start again. i.e. for a block size of 4:
+                    
+                    1
+                    3
+                    5
+                    7
+                        2
+                        4
+                        6
+                        8
+                    
+                    1
+                    2
+                    3
+                    4
+                    ...
+                ]]--
                 
                 ------------------------------------
                 -------- Do stuff with the ---------
                 -------- the sample here -----------
                 ------------------------------------
 
+                    
                 num_samples = num_samples + 1
                 
             end
@@ -149,8 +165,6 @@ local function IterateSamples()
         starttime_sec = starttime_sec + ((block_size * n_channels) / samplerate)
 
     end
-    
-    -- if file then io.close() end
 
     Msg("Done!\n")
     

@@ -6,29 +6,29 @@ function msg(m)
 end
 
 -- set subs
+fastStringIn = reaper.SNM_CreateFastString("")
 count_markers_and_regions, count_regions = reaper.CountProjectMarkers(0)
 for i = 0, count_markers_and_regions - 1 do
   local retval, isrgnOut, posOut, rgnendOut, nameOut, markrgnindexnumberOut =  reaper.EnumProjectMarkers( i )
   
   if isrgnOut == true then 
-    fastStringIn = reaper.SNM_CreateFastString("new Subtitle text for region " .. markrgnindexnumberOut)
+    reaper.SNM_SetFastString(fastStringIn, "new Subtitle text for region " .. markrgnindexnumberOut)
   else
-    fastStringIn = reaper.SNM_CreateFastString("new Subtitle text for marker " .. markrgnindexnumberOut)
+    reaper.SNM_SetFastString(fastStringIn, "new Subtitle text for marker " .. markrgnindexnumberOut)
   end
   
-  regionSubIsSet = reaper.NF_SetSWSMarkerRegionSub(fastStringIn,i)
-  reaper.SNM_DeleteFastString(fastStringIn)
+  regionSubIsSet = reaper.NF_SetSWSMarkerRegionSub(fastStringIn, i)
   i = i + 1
 end
-
-reaper.NF_UpdateSWSMarkerRegionSubWindow()
+reaper.SNM_DeleteFastString(fastStringIn)
+reaper.NF_UpdateSWSMarkerRegionSubWindow() -- optional
 
 -- get subs
+fastStringOut = reaper.SNM_CreateFastString("")
 count_markers_and_regions, count_regions = reaper.CountProjectMarkers(0)
 for i = 0, count_markers_and_regions - 1 do
   local retval, isrgnOut, posOut, rgnendOut, nameOut, markrgnindexnumberOut =  reaper.EnumProjectMarkers( i )
   markerIdx, regionIdx = reaper.GetLastMarkerAndCurRegion( 0, posOut )
-  local fastStringOut = reaper.SNM_CreateFastString("")
   regionSub = reaper.NF_GetSWSMarkerRegionSub(fastStringOut, i)
   msg("i = " .. i)
   msg("retval = " .. retval)
@@ -36,6 +36,6 @@ for i = 0, count_markers_and_regions - 1 do
   msg("markrgnindexnumberOut = " .. markrgnindexnumberOut)
   msg("NOTES = " .. regionSub)
   msg("")
-  reaper.SNM_DeleteFastString(fastStringOut)
   i = i + 1
 end
+reaper.SNM_DeleteFastString(fastStringOut)

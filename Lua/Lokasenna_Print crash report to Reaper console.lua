@@ -61,8 +61,11 @@ crash = function (errObject)
     
     if ret == 6 then 
 
-        reaper.ShowConsoleMsg(  "Error: "..err.."\n\n"..
-                                "Stack traceback:\n\t"..table.concat(tmp, "\n\t", 2).."\n\n")
+        reaper.ShowConsoleMsg(  "Error: "..err.."\n"..
+                                error_message and tostring(error_message).."\n\n" or "\n") ..
+                                "Stack traceback:\n\t"..table.concat(tmp, "\n\t", 2).."\n\n"..
+                                "Reaper version: "..reaper.GetAppVersion().."\n"..
+                                "Platform: "..reaper.GetOS())
     end
 
 end

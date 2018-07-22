@@ -1,113 +1,112 @@
---[[    Provides a set of iterator functions for working with tracks, items, and takes
+--[[    Iterator functions for working with takes, items, and tracks
 
-Usage is similar to 'pairs' or 'file:lines' :
+    Usage is the same as pairs or io.lines:
 
-    for item in ProjectItems() do
-
-        ...
-
-    end
+        for idx, item in SelectedTracks() do
+            ...
+        end
 
 ]]--
 
--- Returns an iterator, using the table returned by set_func
--- set_func MUST return a contiguous indexed table (i.e. 1,2,3,4,5...)
-local function get_iterator(set_func)
+--[[
+    Expects:
+        items   MediaItem
+    Returns:
+        idx     Take index, from 0
+        take    MediaTake
+]]--
+local function Takes(item, idx)
 
-    if not set_func then return end
+    if not item then return end
+    if not idx then return Takes, item, -1 end
 
-    local iter = function(set)
+    idx = idx + 1
+    local take = reaper.GetMediaItemTake(item, idx)
+    
+    if take then return idx, take end
 
-        local t = set_func(set)
-        if not t then return end
-        
-        local i = 0
-        return
-            function()
-                i = i + 1
-                return t[i]
-            end
 
-    end
-
-    return iter
 end
 
 
--- Expects a MediaItem
--- Returns a MediaTake
-local Takes = get_iterator( function(item)
+--[[
+    Expects:
+        proj    Project. Defaults to 0.
+    Returns:
+        idx     Item index in project, from 0
+        item    MediaItem
+]]--
+local function ProjectItems(proj, idx)
 
-    if not item then return nil end
-    local takes = {}
-    for i = 1, reaper.GetMediaItemNumTakes(item) do
-        takes[i] = reaper.GetMediaItemTake(item, i - 1)
-    end
+    if not idx then return ProjectItems, proj or 0, -1 end
 
-    return takes
-end)
+    idx = idx + 1
+    local item = reaper.GetMediaItem(proj, idx)
 
--- Expects a project number (0 if not given)
--- Returns a MediaItem
-local ProjectItems = get_iterator( function(proj)
+    if item then return idx, item end
 
-    if not proj then proj = 0 end
+end
 
-    local items = {}
-    for i = 1, reaper.CountMediaItems(proj) do
-        items[i] = reaper.GetMediaItem(0, i - 1)
-    end
 
-    return items
+--[[
+    Expects:
+        track    MediaTrack
+    Returns:
+        idx     Item index in track, from 0
+        item    MediaItem
+]]--
+local function TrackItems(track, idx)
 
-end)
+    if not track then return end
+    if not idx then return TrackItems, track, -1 end
 
--- Expects a MediaTrack
--- Returns a MediaItem
-local TrackItems = get_iterator( function(track)
+    idx = idx + 1
+    local track = reaper.GetTrackMediaItem(track, idx)
 
-    if not track then return nil end
+    if track then return idx, track end
 
-    local items = {}
-    for i = 1, reaper.CountTrackMediaItems(track) do
-        items[i] = reaper.GetTrackMediaItem(track, i - 1)
-    end
+end
 
-    return items
-end)
 
--- Expects a project number (0 if not given)
--- Returns a MediaItem
-local SelectedItems = get_iterator( function(proj)
-
-    if not proj then proj = 0 end
-
-    local items = {}
-    for i = 1, reaper.CountSelectedMediaItems() do
-        items[i] = reaper.GetSelectedMediaItem(proj, i - 1)
-    end
-
-    return items
-
-end)
-
--- Expects a project number(0 if not given)
--- Returns a MediaTrack
-local Tracks = get_iterator( function(proj)
+--[[
+    Expects:
+        proj    Project. Defaults to 0.
+    Returns:
+        idx     Item index in selection, from 0
+        item    MediaItem
+]]--
+local function SelectedItems(proj, idx)
 
     if not proj then proj = 0 end
+    if not idx then return SelectedItems, proj, -1 end
 
-    local tracks = {}
-    for i = 1, reaper.CountTracks(proj) do
-        tracks[i] = reaper.GetTrack(proj, i - 1)
-    end
+    idx = idx + 1
+    local item = reaper.GetSelectedMediaItem(proj, idx)
 
-    return tracks
+    if item then return idx, item end
 
-end)
+end
 
--- Expects a project number(0 if not given)
--- Returns a MediaTrack
+--[[
+    Expects:
+        proj    Project. Defaults to 0.
+    Returns:
+        idx     Track index in project, from 0
+        track   MediaTrack
+]]--
+local function Tracks(proj, idx)
+
+    if not idx then return Tracks, proj or 0, -1 end
+
+    idx = idx + 1
+    local track = reaper.GetTrack(proj, idx)
+
+    if track then return idx, track end
+
+end
+
+-- Expects a project number (defaults to 0)
+-- Returns an index (from 0) and a MediaTrack
 local SelectedTracks = get_iterator( function(proj)
 
     if not proj then proj = 0 end
@@ -121,6 +120,25 @@ local SelectedTracks = get_iterator( function(proj)
 
 end)
 
+--[[
+    Expects:
+        proj    Project. Defaults to 0.
+    Returns:
+        idx     Item index in selection, from 0
+        track   MediaTrack
+]]--
+local function SelectedTracks(proj, idx)
+
+    if not idx then return SelectedTracks, proj or 0, -1 end
+
+    idx = idx + 1
+    local track = reaper.GetSelectedTrack(proj, idx)
+
+    if track then return idx, track end
+
+end
+
+
 
 
 
@@ -129,27 +147,34 @@ end)
 ------------------------------------
 
 
-local function Msg(str)
-   reaper.ShowConsoleMsg(tostring(str) .. "\n")
+-- Store all strings passed to xMsg in a table and print them when the script
+-- exits. Windows lags really hard if you print a lot of messages individually.
+local xMsgs = {}
+local function xMsg(str)
+    xMsgs[#xMsgs + 1] = tostring(str)
 end
+local function print_xMsgs()
+    reaper.ShowConsoleMsg( table.concat(xMsgs, "\n") )
+end
+reaper.atexit(print_xMsgs)
 
-local function loop_through_all()
 
-    for track in Tracks() do
+local function iterator_example()
 
-        local idx = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")
+    for idx, track in Tracks() do
+
         local ret, name = reaper.GetTrackName(track, "")
-        Msg("track " .. math.floor(idx) .. ": " .. name)
+        xMsg("Track " .. math.floor(idx) .. ": " .. name)
 
-        for item in TrackItems() do
+        for idx, item in TrackItems(track) do
 
-            local idx = reaper.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER")
-            Msg("\titem " .. math.floor(idx))
+            local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+            xMsg("\tItem " .. math.floor(idx) .. " @ " .. string.format("%.4f", pos) .. "s")
 
-            for take in Takes(item) do
+            for idx, take in Takes(item) do
 
-                local idx = reaper.GetMediaItemTakeInfo_Value(take, "IP_TAKENUMBER")
-                Msg("\t\ttake " .. math.floor(idx))
+                local active = reaper.GetActiveTake(item)
+                xMsg("\t\tTake " .. math.floor(idx) .. (take == active and " (active)" or ""))
 
             end
 
@@ -159,4 +184,4 @@ local function loop_through_all()
 
 end
 
-loop_through_all()
+iterator_example()

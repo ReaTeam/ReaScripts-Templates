@@ -12,4 +12,4 @@
   end
   
   tr = reaper.GetSelectedTrack(0,0)
-  track_notes = GetSWSNotes(tr
+  track_notes = GetSWSNotes(tr)

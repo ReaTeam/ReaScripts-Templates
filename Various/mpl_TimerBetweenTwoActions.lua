@@ -5,6 +5,9 @@ action_id_1 = 00000 -- insert here first action ID
 action_id_2 = 00000 -- insert here second action ID
 ---------------------------------------------------
 
+
+
+
 function timer() 
  time2 = reaper.time_precise()
  time_con = true
@@ -22,15 +25,12 @@ function sec_fn ()
 reaper.Main_OnCommand(action_id_2, 0)
 reaper.UpdateArrange()
 end
+
+
+
 -- PERFORM:
+reaper.Main_OnCommand(action_id_1, 0) reaper.UpdateArrange()  -- execute 1st defined action
 
--- 1. Do Some action. Insert action Id
-reaper.Main_OnCommand(action_id_1, 0)
-reaper.UpdateArrange()
+time1 = reaper.time_precise() timer() -- wait for defined time
 
--- 2. Wait for defined time
-time1 = reaper.time_precise()
-timer()
-
--- 3. Do second Action
-reaper.atexit(sec_fn) -- also stop running script
+reaper.atexit(sec_fn) -- execute 2nd defined action, stop running script

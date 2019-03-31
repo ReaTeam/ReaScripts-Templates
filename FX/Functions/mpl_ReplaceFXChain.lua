@@ -1,4 +1,7 @@
-  function ReplaceFXChain(track, new_chain) local out_chunk 
+  function ReplaceFXChain(track, file)
+ local out_chunk ,content 
+	
+  content = file:read('a')  
     --------
     function ExtractBlock(str)
       local s = ''
@@ -47,6 +50,5 @@ DOCKED 0
   
   
   file = io.open('C:/test.RfxChain', 'r')
-  content = file:read('a')  
   track = reaper.GetSelectedTrack(0,0)
-  ReplaceFXChain(track, content)
+  ReplaceFXChain(track, file)

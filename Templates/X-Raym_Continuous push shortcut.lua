@@ -12,6 +12,9 @@
 	+ Initial Release
 --]]
 
+-- Note: Link your keys to No-op (no action) in action list
+-- Note: Be very strict about focus (is arrange view in focus, is mouse over item etc) else the action might trigger at unexpected moment (like writing track name) 
+
 -- USER CONFIG AREA --
 action_id = 40725 -- Grid: Toggle measure grid
 VirtualKeyCode = 0x47 -- G -- https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes

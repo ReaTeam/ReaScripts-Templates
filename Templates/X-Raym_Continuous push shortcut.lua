@@ -12,9 +12,14 @@
 	+ Initial Release
 --]]
 
--- Globals
-toggle_state = reaper.GetToggleCommandState(41686) -- Grid: Toggle measure grid
+-- USER CONFIG AREA --
+action_id = 40725 -- Grid: Toggle measure grid
 VirtualKeyCode = 0x47 -- G -- https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+
+----------------------
+
+-- Globals
+toggle_state = reaper.GetToggleCommandState( action_id ) 
 
 -- Set ToolBar Button State
 function SetButtonState( set )
@@ -33,13 +38,13 @@ function main()
   if state:byte(VirtualKeyCode) ~= 0 then
     if toggle_state == 0 then
       reaper.ShowConsoleMsg("G key is pressed" .. "\n")
-      reaper.Main_OnCommand( 40725, 0 ) -- Toggle grid
+      reaper.Main_OnCommand( action_id, 0 ) -- Toggle grid
       toggle_state = 1
     end
   else
     if toggle_state == 1 then
       reaper.ShowConsoleMsg("G key is released" .. "\n")
-      reaper.Main_OnCommand( 40725, 0 ) -- Toggle grid
+      reaper.Main_OnCommand( action_id, 0 ) -- Toggle grid
       toggle_state = 0
     end
   end

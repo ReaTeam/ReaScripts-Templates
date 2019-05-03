@@ -1,0 +1,20 @@
+window_w = 640;
+window_h = 270;
+
+function init(window_w, window_h) (
+  gfx_init("GFX" , window_w, window_h);
+);
+
+function Update() (
+  gfx_update();
+  defer("run");
+);
+
+function run() (
+
+  Update()
+
+);
+
+init(window_w, window_h);
+run();

@@ -1,13 +1,8 @@
-# import reapy
-from reapy import reascript_api as RPR
-
-# import os
-# import sys
-# sys.argv=["Main"]
+import reapy
 
 from tkinter import *
 
-#Quit the script
+# Quit the script
 def quit():
   global root
   root.destroy()
@@ -15,7 +10,7 @@ def quit():
 def callback():
     text = E1.get()
     quit()
-    RPR.ShowMessageBox( text, 'test', 1 )
+    reapy.show_message_box(text, title='test', mode='ok-cancel')
 
 root = Tk() # Init TK
 root.lift() # Stay on top

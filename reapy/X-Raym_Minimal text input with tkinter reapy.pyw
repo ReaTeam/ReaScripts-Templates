@@ -1,9 +1,9 @@
-import reapy
+# import reapy
 from reapy import reascript_api as RPR
 
-import os
-import sys
-sys.argv=["Main"]
+# import os
+# import sys
+# sys.argv=["Main"]
 
 from tkinter import *
 

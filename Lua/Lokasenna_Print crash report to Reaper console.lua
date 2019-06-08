@@ -37,37 +37,37 @@ end
 
 
 crash = function (errObject)
-                             
-    local by_line = "([^\r\n]*)\r?\n?"
-    local trim_path = "[\\/]([^\\/]-:%d+:.+)$"
-    local err = string.match(errObject, trim_path) or "Couldn't get error message."
 
-    local trace = debug.traceback()
-    local tmp = {}
-    for line in string.gmatch(trace, by_line) do
-        
-        local str = string.match(line, trim_path) or line
-        
-        tmp[#tmp + 1] = str
+  local byLine = "([^\r\n]*)\r?\n?"
+  local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+  local err = errObject   and string.match(errObject, trimPath)
+                          or  "Couldn't get error message."
 
-    end
-    
-    local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
-    
-    local ret = reaper.ShowMessageBox(name.." has crashed!\n\n"..
-                                      "Would you like to have a crash report printed "..
-                                      "to the Reaper console?", 
-                                      "Oops", 4)
-    
-    if ret == 6 then 
+  local trace = debug.traceback()
+  local stack = {}
+  for line in string.gmatch(trace, byLine) do
+    local str = string.match(line, trimPath) or line
+    stack[#stack + 1] = str
+  end
 
-        reaper.ShowConsoleMsg(  "Error: "..err.."\n"..
-                                error_message and tostring(error_message).."\n\n" or "\n") ..
-                                "Stack traceback:\n\t"..table.concat(tmp, "\n\t", 2).."\n\n"..
-                                "Reaper version: "..reaper.GetAppVersion().."\n"..
-                                "Platform: "..reaper.GetOS())
-    end
+  local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
 
+  local ret = reaper.ShowMessageBox(
+      name.." has crashed!\n\n"..
+      "Would you like to have a crash report printed "..
+      "to the Reaper console?",
+      "Oops",
+      4
+    )
+
+  if ret == 6 then
+    reaper.ShowConsoleMsg(
+      "Error: "..err.."\n\n"..
+      "Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
+      "Reaper:       \t"..reaper.GetAppVersion().."\n"..
+      "Platform:     \t"..reaper.GetOS()
+    )
+  end
 end
 
 xpcall(main, crash)

@@ -1,6 +1,3 @@
--- Based on eugen277 code for the waveform display
--- just plug the UpdateColorFromFreq( freq ) in the Peaks_draw function
-
 min_freq = 80
 max_freq = 1000
 Thresh_dB = -40
@@ -12,7 +9,7 @@ end
 
 _, h_offset = reaper.get_config_var_string( "specpeak_huel" )
 h_offset = MapLinear(tonumber(h_offset%1+0.06), 0,1,0,360) -- 0.06 is a manual offset
-s = 1.5
+s = 1
 l = 0.5
 a = 1
 
@@ -71,7 +68,7 @@ end
 function UpdateColorFromFreq( freq )
   local h = (map(freq) + h_offset)/360
   local color_a = table.pack(hslToRgb(h, s, l, a))
-  gfx.r, gfx.g, gfx.b = color_a[1]/360, color_a[2]/360, color_a[3]/360
+  gfx.r, gfx.g, gfx.b = color_a[1]/255, color_a[2]/255, color_a[3]/255
 end
 
 ------------------------------------------------------------

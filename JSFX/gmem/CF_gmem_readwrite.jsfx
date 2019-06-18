@@ -1,0 +1,42 @@
+desc:Storing strings in global memory space
+version:1.0
+author:cfillion
+options:gmem=some_namespace
+
+@block
+function gmem_write_string(index, value) local(offset) (
+  offset = 0;
+
+  loop(strlen(value),
+    gmem[index] = str_getchar(value, offset);
+    offset += 1;
+    index += 1;
+  );
+  
+  gmem[index] = 0;
+);
+
+trigger ? gmem_write_string(0, "foo");
+
+@gfx
+function gmem_read_string(index, output) local(offset, buf) (
+  offset = 0;
+  buf = #;
+
+  while (
+    gmem[index] ? (
+      str_setchar(buf, offset, gmem[index]);
+      offset += 1;
+      index  += 1;
+    ) : 0;
+  );
+  
+  strcpy_substr(output, buf, 0, offset); // truncates the output
+);
+
+gfx_r = gfx_g = gfx_b = 1;
+gfx_x = 0;
+
+str = #;
+gmem_read_string(0, str);
+gfx_drawstr(str);

@@ -3,6 +3,11 @@ max_freq = 1000
 Thresh_dB = -40
 min_tonal = 0.85
 
+
+function lerp( a, b, t ) -- Linear interpolation
+  return a + ( b - a ) * t
+end
+
 function MapLinear (num, in_min, in_max, out_min, out_max)
   return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
@@ -95,33 +100,28 @@ function Peaks_Draw(Peaks)
   local offs = min_note * Kn
   ----------------------
   local abs, max = math.abs, math.max
-  for i = 1, #Peaks, 4 do
-    local max_peak, min_peak = Peaks[i], Peaks[i+1]
-    local xx = i/4
-    gfx.set(0,0.5,0,1)
-    UpdateColorFromFreq( Peaks[i+2])
-    gfx.line(xx , axis - max_peak*Ky, xx, axis - min_peak*Ky, true) -- Peaks   
-    --[[ 
-    if max(abs(max_peak), abs(min_peak)) > Thresh then
-      local freq, tonal = Peaks[i+2], Peaks[i+3]
-      local note = 69 + 12 * math.log(freq/440, 2)  
-      if tonal >= min_tonal and note >= min_note and note <= max_note then
-        gfx.x = xx; gfx.y = gfx.h + offs - note*Kn;
-        gfx.setpixel(1,0,0)
-      elseif note < min_note then
-        gfx.x = xx; gfx.y = gfx.h - 10;
-        gfx.setpixel(0,0,1)
-      elseif note > max_note then
-        gfx.x = xx; gfx.y = 10;
-        gfx.setpixel(0,1,1)
-      end
+  local chans = #Peaks.max_peaks
+  for j = 1, chans do
+    local axis = gfx.h * j/chans - gfx.h/chans/2
+    for i = 1, #Peaks.max_peaks[1] do
+      local max_peak, min_peak = Peaks.max_peaks[j][i], Peaks.min_peaks[j][i]
+      --local a = lerp( 0.4, 1, math.abs( max_peak ) )
+      gfx.a = 1
+
+        UpdateColorFromFreq( Peaks.freq_peaks[j][i] )
+
+      gfx.line(i , axis - max_peak*Ky/chans, i, axis - min_peak*Ky/chans, true) -- Peaks   
+      -------------------- 
+      local a = lerp( 0.4, 1, math.abs( max_peak ) )
+      if a > 1 then a = 1 end
+      gfx.a = a
+      gfx.triangle( x , y, x2, y2, x2, axis, x, axis)
     end
-    ]]
   end
    
 end
 ------------------------------------------------------------
-function Item_GetPeaks(item)
+function Item_GetPeaks(item, PCM_Source)
   if not item then return end
   local take = reaper.GetActiveTake(item)
   if not take or reaper.TakeIsMIDI(take) then return end
@@ -135,7 +135,8 @@ function Item_GetPeaks(item)
   if len <= 0 then return end 
   ------------------
   --PCM_Source = reaper.GetMediaItemTake_Source(take)
-  local n_chans = 1   -- I GetPeaks Only from 1 channel!!!
+--  local n_chans = 1   -- I GetPeaks Only from 1 channel!!!
+  local n_chans = reaper.GetMediaSourceNumChannels( PCM_Source )
   local peakrate = gfx.w / len
   local n_spls = math.floor(len*peakrate + 0.5) -- its Peak Samples         
   local want_extra_type = 115  -- 's' char
@@ -149,19 +150,42 @@ function Item_GetPeaks(item)
   ------------------
   local Peaks = {}
   if spl_cnt > 0 and ext_type > 0 then
-    for i = 1, n_spls do
-      local p = #Peaks
-      Peaks[p+1] = buf[i]             -- max peak
-      Peaks[p+2] = buf[n_spls + i]    -- min peak
-      --------------
-      local spectral = buf[n_spls*2 + i]    -- spectral peak
-      -- freq and tonality from spectral peak --
-      Peaks[p+3] = spectral&0x7fff       -- low 15 bits frequency
-      Peaks[p+4] = (spectral>>15)/16384  -- tonality norm value 
+    
+    local max_peaks = {}
+    local min_peaks = {}
+    local freq_peaks = {}
+    local tonal_peaks = {}
+    
+    for i = 1, n_chans do
+      max_peaks[i] = {}
+      min_peaks[i] = {}
+      freq_peaks[i] = {}
+      -- tonal_peaks[i] = {}
     end
+    
+    for i = 1, n_spls * n_chans, n_chans  do
+       
+      for j = 1, n_chans do
+      
+        table.insert(max_peaks[j], buf[i+j-1] )    -- max peak
+        
+        table.insert(min_peaks[j], buf[i+j-1+n_spls*n_chans] )
+        local spectral
+        if n_chans > 1 then
+          spectral = buf[i+j-1+n_spls*(n_chans+2)]
+        else
+          spectral = buf[i+j-1+n_spls*(n_chans+1)]
+        end
+        table.insert(freq_peaks[j], spectral&0x7fff ) -- low 15 bits frequency
+        --table.insert(freq_peaks[j], (spectral>>15)/16384)  -- tonality norm value
+      
+      end
+    
+    end
+    
+    return {max_peaks = max_peaks, min_peaks = min_peaks, freq_peaks = freq_peaks }
   end
-  ------------------
-  return Peaks
+
 end
 
 ---------------------------
@@ -180,7 +204,8 @@ function main()
       gfx.dest = 0; -- set dest buf = 0   
       local item = reaper.GetSelectedMediaItem(0, 0) 
       if item then
-        local Peaks = Item_GetPeaks(item) 
+        local source = reaper.GetMediaItemTake_Source(reaper.GetActiveTake(item))
+        local Peaks = Item_GetPeaks(item, source) 
         if Peaks then Peaks_Draw(Peaks) end
       end 
     end

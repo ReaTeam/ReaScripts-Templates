@@ -1,17 +1,13 @@
 --[[
  * ReaScript Name: 
- * Description: 
- * Instructions: Run
  * Author: 
  * Author URI: 
  * Repository: 
  * Repository URI: 
- * File URI: 
  * Licence: GPL v3
  * Forum Thread: 
  * Forum Thread URI: 
  * REAPER: 5.0
- * Extensions: None
  * Version: 1.0
 --]]
  

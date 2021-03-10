@@ -22,7 +22,7 @@
  -- Set ToolBar Button State
 function SetButtonState( set )
   local is_new_value, filename, sec, cmd, mode, resolution, val = reaper.get_action_context()
-  reaper.SetToggleCommandState( sec, cmd, set or 0 ) -- Set ON
+  reaper.SetToggleCommandState( sec, cmd, set or 0 )
   reaper.RefreshToolbar2( sec, cmd )
 end
 

@@ -66,20 +66,19 @@ end
 
 
 -- INIT
-
--- See if there is items selected
-count_sel_items = reaper.CountSelectedMediaItems(0)
-
-if count_sel_items > 0 then
+function Init()
+  -- See if there is items selected
+  count_sel_items = reaper.CountSelectedMediaItems(0)
+  if count_sel_items == 0 then return false end
 
   reaper.PreventUIRefresh(1)
 
   reaper.Undo_BeginBlock()
-  
+
   init_sel_items = SaveSelectedItems()
 
   Main()
-  
+
   RestoreSelectedItems(init_sel_items)
 
   reaper.Undo_EndBlock(undo_text, -1)
@@ -89,3 +88,8 @@ if count_sel_items > 0 then
   reaper.PreventUIRefresh(-1)
   
 end
+
+if not preset_file_init then
+  Init() 
+end
+

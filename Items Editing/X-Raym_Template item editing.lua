@@ -14,7 +14,7 @@
 --[[
  * Changelog:
  * v1.0 (2016-01-29)
-	+ Initial Release
+  + Initial Release
 --]]
 
 
@@ -22,35 +22,45 @@
 
 console = true -- true/false: display debug messages in the console
 
+undo_text = "My action" 
 ------------------------------------------------------- END OF USER CONFIG AREA
 
 
 -- UTILITIES -------------------------------------------------------------
 
 -- Save item selection
-function SaveSelectedItems (table)
-	for i = 0, reaper.CountSelectedMediaItems(0)-1 do
-		table[i+1] = reaper.GetSelectedMediaItem(0, i)
-	end
+function SaveSelectedItems(t)
+  local t = t or {}
+  for i = 0, reaper.CountSelectedMediaItems(0)-1 do
+    t[i+1] = reaper.GetSelectedMediaItem(0, i)
+  end
+  return t
+end
+
+function RestoreSelectedItems( items )
+  reaper.SelectAllMediaItems(0, false)
+  for i, item in ipairs( items ) do
+    reaper.SetMediaItemSelected( item, true )
+  end
 end
 
 
 -- Display a message in the console for debugging
 function Msg(value)
-	if console then
-		reaper.ShowConsoleMsg(tostring(value) .. "\n")
-	end
+  if console then
+    reaper.ShowConsoleMsg(tostring(value) .. "\n")
+  end
 end
 
 --------------------------------------------------------- END OF UTILITIES
 
 
 -- Main function
-function main()
+function Main()
 
-	for i, item in ipairs(init_sel_items) do
-		reaper.SetMediaItemInfo_Value(item, "D_POSITION", value_set)
-	end
+  for i, item in ipairs(init_sel_items) do
+    reaper.SetMediaItemInfo_Value(item, "D_POSITION", value_set)
+  end
 
 end
 
@@ -62,19 +72,20 @@ count_sel_items = reaper.CountSelectedMediaItems(0)
 
 if count_sel_items > 0 then
 
-	reaper.PreventUIRefresh(1)
+  reaper.PreventUIRefresh(1)
 
-	reaper.Undo_BeginBlock() -- Begining of the undo block. Leave it at the top of your main function.
-	
-	init_sel_items =  {}
-	SaveSelectedItems(init_sel_items)
+  reaper.Undo_BeginBlock()
+  
+  init_sel_items = SaveSelectedItems()
 
-	main()
+  Main()
+  
+  RestoreSelectedItems(init_sel_items)
 
-	reaper.Undo_EndBlock("My action", -1) -- End of the undo block. Leave it at the bottom of your main function.
+  reaper.Undo_EndBlock(undo_text, -1)
 
-	reaper.UpdateArrange()
+  reaper.UpdateArrange()
 
-	reaper.PreventUIRefresh(-1)
-	
+  reaper.PreventUIRefresh(-1)
+  
 end

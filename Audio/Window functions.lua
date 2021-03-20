@@ -1,3 +1,8 @@
+-- Windoing functions for FFT
+
+-- https://en.wikipedia.org/wiki/Window_function
+-- https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/46092/versions/3/previews/coswin.m/index.html?access_key=
+
 local function HannWindow( size )
   local pi = math.pi
   local cos = math.cos
@@ -10,37 +15,83 @@ local function HannWindow( size )
 end
 
 
-local function HammingWindow( size )
+local function HammingWindow( size, exact )
   local pi = math.pi
   local cos = math.cos
   local t = {}
+  local a0 = exact and .5383553946707251 or .54
+  local a1 = exact and .4616446053292749 or .46
   size = size-1
   for i = 0, size do
-    t[i+1] = .54-.46*cos(2*pi*i/size)
+    t[i+1] = a0-a1*cos(2*pi*i/size)
   end
   return t
 end
 
 
-local function BlackmanWindow( size )
+local function BlackmanWindow( size, exact )
   local pi = math.pi
   local cos = math.cos
   local t = {}
+  local a0 = exact and .42659071367154 or .42
+  local a1 = exact and .49656061908856 or .5
+  local a2 = exact and .076848667239897 or .08
   size = size-1
   for i = 0, size do
-    t[i+1] = .42-.5*cos(2*pi*i/size)+.08*cos(4*pi*i/size)
+    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)
   end
   return t
 end
 
 
-local function BlackmanHarrisWindow( size )
+local function BlackmanHarrisWindow( size, exact )
+  -- 4-term
   local pi = math.pi
   local cos = math.cos
   local t = {}
+  local a0 = exact and .358750287312166 or .35875
+  local a1 = exact and .488290107472600 or .48829
+  local a2 = exact and .141279712970519 or .14128
+  local a3 = exact and .011679892244715 or .01168
   size = size-1
   for i = 0, size do
-    t[i+1] = .35875-.48829*cos(2*pi*i/size)+.14128*cos(4*pi*i/size)-.01168*cos(6*pi*i/size)
+    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)
+  end
+  return t
+end
+
+
+local function FiveTermCosineWindow( size )
+  local pi = math.pi
+  local cos = math.cos
+  local t = {}
+  local a0 = 3.232153788877343e-001
+  local a1 = 4.714921439576260e-001
+  local a2 = 1.755341299601972e-001
+  local a3 = 2.849699010614994e-002
+  local a4 = 1.261357088292677e-003
+  size = size-1
+  for i = 0, size do
+    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)+a4*cos(8*pi*i/size)
+  end
+  return t
+end
+
+
+local function SevenTermCosineWindow( size )
+  local pi = math.pi
+  local cos = math.cos
+  local t = {}
+  local a0 = 2.712203605850388e-001
+  local a1 = 4.334446123274422e-001
+  local a2 = 2.180041228929303e-001
+  local a3 = 6.578534329560609e-002
+  local a4 = 1.076186730534183e-002
+  local a5 = 7.700127105808265e-004
+  local a6 = 1.368088305992921e-005
+  size = size-1
+  for i = 0, size do
+    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)+a4*cos(8*pi*i/size)-a5*cos(10*pi*i/size)+a6*cos(12*pi*i/size)          
   end
   return t
 end

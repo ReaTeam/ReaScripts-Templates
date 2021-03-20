@@ -38,7 +38,8 @@ local function BlackmanWindow( size, exact )
   local a2 = exact and .076848667239897 or .08
   size = size-1
   for i = 0, size do
-    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)
+    local x = 2*pi*i/size
+    t[i+1] = a0-a1*cos(x)+a2*cos(2*x)
   end
   return t
 end
@@ -55,7 +56,8 @@ local function BlackmanHarrisWindow( size, exact )
   local a3 = exact and .011679892244715 or .01168
   size = size-1
   for i = 0, size do
-    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)
+    local x = 2*pi*i/size
+    t[i+1] = a0-a1*cos(x)+a2*cos(2*x)-a3*cos(3*x)
   end
   return t
 end
@@ -72,7 +74,8 @@ local function FiveTermCosineWindow( size )
   local a4 = 1.261357088292677e-003
   size = size-1
   for i = 0, size do
-    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)+a4*cos(8*pi*i/size)
+    local x = 2*pi*i/size
+    t[i+1] = a0-a1*cos(x)+a2*cos(2*x)-a3*cos(3*x)+a4*cos(4*x)
   end
   return t
 end
@@ -90,8 +93,9 @@ local function SevenTermCosineWindow( size )
   local a5 = 7.700127105808265e-004
   local a6 = 1.368088305992921e-005
   size = size-1
-  for i = 0, size do
-    t[i+1] = a0-a1*cos(2*pi*i/size)+a2*cos(4*pi*i/size)-a3*cos(6*pi*i/size)+a4*cos(8*pi*i/size)-a5*cos(10*pi*i/size)+a6*cos(12*pi*i/size)          
+  for i = 0, size do      
+    local x = 2*pi*i/size
+    t[i+1] = a0-a1*cos(x)+a2*cos(2*x)-a3*cos(3*x)+a4*cos(4*x)-a5*cos(5*x)+a6*cos(6*x)   
   end
   return t
 end

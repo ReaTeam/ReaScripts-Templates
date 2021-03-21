@@ -118,6 +118,9 @@ local function IterateSamples()
         -- Loads 'samplebuffer' with the next block
         GetSamples(audio, samplerate, n_channels, starttime_sec, block_size, samplebuffer)
 
+        -- amagalma note: Storing the buffer to a Lua table speeds up access times by 4x-6x times!!
+        local temp = samplebuffer.table()
+        
         -- Loop through each channel separately
         for i = 1, n_channels do
 
@@ -126,7 +129,7 @@ local function IterateSamples()
                 -- Sample position in the block
                 local pos = (j - 1) * n_channels + i   
                 
-                local spl = samplebuffer[pos] 
+                local spl = temp[pos] -- accessing a lua table is way faster than a reaper.array!
                 
                 --[[
                     The algorithm here should iterate through all the samples in

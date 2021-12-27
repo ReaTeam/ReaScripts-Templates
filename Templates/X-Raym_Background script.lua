@@ -4,12 +4,11 @@
  * Author: X-Raym
  * Author URI: http://extremraym.com
  * Repository: GitHub > X-Raym > EEL Scripts for Cockos REAPER
- * Repository URI: https://github.com/X-Raym/REAPER-EEL-Scripts
+ * Repository URI: https://github.com/X-Raym/REAPER-ReaScripts
  * Licence: GPL v3
  * Forum Thread: Toolbar button toggle state for script actions?
  * Forum Thread URI: http://forum.cockos.com/showthread.php?t=164034
- * REAPER: 5.0
- * Extensions: None
+ * REAPER: 6.0
  * Version: 1.0
 --]]
  
@@ -28,9 +27,9 @@ end
 
 
 -- Main Function (which loop in background)
-function main()
+function Main()
   
-  reaper.defer( main )
+  reaper.defer( Main )
   
 end
 
@@ -38,5 +37,5 @@ end
 
 -- RUN
 SetButtonState( 1 )
-main()
+Main()
 reaper.atexit( SetButtonState )

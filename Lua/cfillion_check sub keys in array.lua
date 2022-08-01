@@ -8,12 +8,11 @@ function dig(array, ...)
 end
 
 -- OR, if you want the value directly
-
-function dig(array, ...)
+function CheckTableKey(array, ...)
   for i = 1, select('#', ...) do
-    if type(array) ~= 'table' then return false end
+    if type(array) ~= 'table' then return nil end
     array = array[select(i, ...)]
-    if array == nil then return false end
+    if array == nil then return nil end
   end
   return array
 end

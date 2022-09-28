@@ -10,6 +10,11 @@
  * Version: 1.0
 --]]
 
+-- USER CONFIG AREA -------------------------------------------------
+GFX2IMGUI_NO_LOG = false
+
+------------------------------------------ END OF USER CONFIG AREA --
+
 -- NOTE: Nothing to modify below. Just read instructions in the About header field.
 
 -- ReaImGui Check

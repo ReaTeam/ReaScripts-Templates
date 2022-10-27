@@ -12,7 +12,7 @@
 
 -- USER CONFIG AREA -------------------------------------------------
 GFX2IMGUI_NO_LOG = false
-KEEP_LATEST_UNUSED_FONTS_IN_CACHE = 16
+GFX2IMGUI_UNUSED_FONTS_CACHE_SIZE = 16
 
 ------------------------------------------ END OF USER CONFIG AREA --
 

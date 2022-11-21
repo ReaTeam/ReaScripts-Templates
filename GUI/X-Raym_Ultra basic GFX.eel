@@ -1,0 +1,20 @@
+window_w = 640;
+window_h = 270;
+
+function init(window_w, window_h, window_x, window_y, docked) (
+  gfx_init("GFX" , window_w, window_h, docked, window_x, window_y)
+);
+
+
+function run() (
+  char = gfx_getchar();
+  
+  timeprecise = time_precise();
+  
+  gfx_update();
+  char ~= 27 || char < 0 ? ( defer("run()") ):( gfx_quit() );
+
+);
+
+init(window_w, window_h, 0, 0, 0);
+run();

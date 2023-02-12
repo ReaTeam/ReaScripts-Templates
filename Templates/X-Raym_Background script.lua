@@ -15,10 +15,10 @@
 --[[
  * Changelog:
  * v1.0 (2018-08-26)
-	+ Initial Release
- --]]
+  + Initial Release
+--]]
  
- -- Set ToolBar Button State
+-- Set ToolBar Button State
 function SetButtonState( set )
   local is_new_value, filename, sec, cmd, mode, resolution, val = reaper.get_action_context()
   reaper.SetToggleCommandState( sec, cmd, set or 0 )

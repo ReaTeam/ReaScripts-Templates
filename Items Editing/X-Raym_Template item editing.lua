@@ -20,7 +20,6 @@
 
 
 -- USER CONFIG AREA -----------------------------------------------------------
-
 console = true -- true/false: display debug messages in the console
 
 undo_text = "My action" 

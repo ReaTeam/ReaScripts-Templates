@@ -2,6 +2,7 @@
  * ReaScript Name: 
  * Author: 
  * Author URI: 
+ * Screenshot: 
  * Repository: 
  * Repository URI: 
  * Licence: GPL v3
@@ -67,6 +68,9 @@ end
 
 -- INIT
 function Init()
+ 
+  reaper.ClearConsole()
+ 
   -- See if there is items selected
   count_sel_items = reaper.CountSelectedMediaItems(0)
   if count_sel_items == 0 then return false end

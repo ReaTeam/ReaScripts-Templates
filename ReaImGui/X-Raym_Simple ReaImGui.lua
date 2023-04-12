@@ -1,8 +1,8 @@
 --[[
  * ReaScript Name: ReaImGui Minimal Template
- * Author: X-Raym
- * Author URI: https://www.extremraym.com
- * Repository: X-Raym Premium Scripts
+ * Author: 
+ * Author URI: 
+ * Repository: 
  * Licence: GPL v3
  * Version: 1.0
 --]]

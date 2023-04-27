@@ -38,6 +38,11 @@ if not reaper.ImGui_CreateContext then
   return false
 end
 
+reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
+if reaper.file_exists( reaimgui_shim_file_path ) then
+  dofile( reaimgui_shim_file_path )('0.8')
+end
+
 if reaimgui_force_version then
   reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
   if reaper.file_exists( reaimgui_shim_file_path ) then
@@ -88,8 +93,8 @@ function Main()
 end
 
 function Run()
-
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_WindowBg(), 0x0F0F0FFF) -- Black opaque background
+  
+  reaper.ImGui_SetNextWindowBgAlpha( ctx, 1 )
 
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_SetNextWindowSize(ctx, 800, 200, reaper.ImGui_Cond_FirstUseEver())
@@ -111,13 +116,10 @@ function Run()
 
     reaper.ImGui_End(ctx)
   end
-
-  reaper.ImGui_PopStyleColor(ctx) -- Remove black opack background
+  
   reaper.ImGui_PopFont(ctx)
 
-  if process or not imgui_open or reaper.ImGui_IsKeyPressed(ctx, 27) then -- 27 is escaped key
-    reaper.ImGui_DestroyContext(ctx)
-  else
+  if imgui_open and not reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) and not process then
     reaper.defer(Run)
   end
 
@@ -136,7 +138,7 @@ function Init()
   font = reaper.ImGui_CreateFont('sans-serif', 16)
   reaper.ImGui_Attach(ctx, font)
 
-  Run()
+  reaper.defer(Run)
 end
 
 if not preset_file_init then

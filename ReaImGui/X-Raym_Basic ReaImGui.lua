@@ -5,6 +5,11 @@ if not reaper.ImGui_CreateContext then
   return false
 end
 
+reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
+if reaper.file_exists( reaimgui_shim_file_path ) then
+  dofile( reaimgui_shim_file_path )('0.8')
+end
+
 -- Set ToolBar Button State
 function SetButtonState( set )
   local is_new_value, filename, sec, cmd, mode, resolution, val = reaper.get_action_context()
@@ -49,9 +54,7 @@ function Run()
     reaper.ImGui_End(ctx)
   end
 
-  if process or not imgui_open or reaper.ImGui_IsKeyPressed(ctx, 27) then -- 27 is escaped key
-    reaper.ImGui_DestroyContext(ctx)
-  else
+  if imgui_open and not reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) and not process then
     reaper.defer(Run)
   end
 
@@ -68,7 +71,7 @@ function Init()
 
   ctx = reaper.ImGui_CreateContext(input_title,  reaper.ImGui_ConfigFlags_DockingEnable())
 
-  Run()
+  reaper.defer(Run)
 end
 
 Init()

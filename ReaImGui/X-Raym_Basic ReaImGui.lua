@@ -7,7 +7,7 @@ end
 
 reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
 if reaper.file_exists( reaimgui_shim_file_path ) then
-  dofile( reaimgui_shim_file_path )('0.8')
+  dofile( reaimgui_shim_file_path )('0.8.6')
 end
 
 -- Set ToolBar Button State
@@ -69,7 +69,7 @@ function Init()
   SetButtonState( 1 )
   reaper.atexit( Exit )
 
-  ctx = reaper.ImGui_CreateContext(input_title,  reaper.ImGui_ConfigFlags_DockingEnable())
+  ctx = reaper.ImGui_CreateContext(input_title)
 
   reaper.defer(Run)
 end

@@ -38,11 +38,6 @@ if not reaper.ImGui_CreateContext then
   return false
 end
 
-reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
-if reaper.file_exists( reaimgui_shim_file_path ) then
-  dofile( reaimgui_shim_file_path )('0.8.6')
-end
-
 if reaimgui_force_version then
   reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
   if reaper.file_exists( reaimgui_shim_file_path ) then

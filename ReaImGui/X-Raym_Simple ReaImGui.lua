@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: ReaImGui Minimal Template
+ * ReaScript Name: ReaImGui Simple Template
  * Author: 
  * Author URI: 
  * Repository: 

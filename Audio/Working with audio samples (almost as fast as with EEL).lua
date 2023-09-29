@@ -24,7 +24,7 @@ loop(block_size,
     j=1;
     loop(n_channels,
     
-        spl = samplebuffer[i * j];
+        spl = samplebuffer[i*n_channels+j];
 
 
         //
@@ -42,7 +42,7 @@ loop(block_size,
     
 );
 
-starttime_sec+=(block_size * n_channels)/samplerate;
+starttime_sec+=block_size/samplerate;
 ]])
 
 

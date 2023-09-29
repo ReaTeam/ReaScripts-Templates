@@ -40,10 +40,7 @@ loop(block_size,
     
     i+=1;  
     
-);
-
-starttime_sec+=block_size/samplerate;
-]])
+);]])
 
 
 -- making math function local improves their speed
@@ -143,10 +140,14 @@ local function IterateSamples()
 
     -- Loop through the audio, one block at a time
     local starttime_sec = range_start
+    local step_time = block_size/samplerate
     for cur_block = 0, n_blocks do
 
         -- The last iteration will almost never be a full block
-        if cur_block == n_blocks then block_size = extra_spls end
+        if cur_block == n_blocks then 
+            block_size = extra_spls
+            step_time = block_size/samplerate
+        end
         
         samplebuffer.clear()    
         
@@ -159,7 +160,7 @@ local function IterateSamples()
         reaper.ImGui_Function_SetValue_Array(ReadArrayWithEEL, 'samplebuffer', samplebuffer)
         reaper.ImGui_Function_SetValue(ReadArrayWithEEL, 'samplerate', samplerate)
         reaper.ImGui_Function_Execute(ReadArrayWithEEL)
-        starttime_sec = reaper.ImGui_Function_GetValue(ReadArrayWithEEL, 'starttime_sec')
+        starttime_sec = starttime_sec + step_time
         num_samples = reaper.ImGui_Function_GetValue(ReadArrayWithEEL, 'num_samples')
         
     end

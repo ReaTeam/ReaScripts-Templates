@@ -13,6 +13,7 @@
 -- USER CONFIG AREA -------------------------------------------------
 GFX2IMGUI_NO_LOG = false
 GFX2IMGUI_UNUSED_FONTS_CACHE_SIZE = 16
+GFX2IMGUI_PROFILE = false -- true needs profiler.lua in Scripts folder. See https://github.com/ReaTeam/ReaScripts-Templates/blob/master/Profiler/profiler.lua
 
 ------------------------------------------ END OF USER CONFIG AREA --
 

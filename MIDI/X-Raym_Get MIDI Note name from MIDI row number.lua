@@ -1,3 +1,23 @@
+-- This version is way more concize
+
+--[[
+number: integer, MIDI row, between 0 and 127
+offset: integer, octave offset
+flat: bolean, sharp by default, flat if true
+idx: bolean, have the number in three digits form as prefix (useful for sorting)
+]]--
+function GetMIDINoteName(number, offset, flat, idx)
+  if 0 < number and number > 127 then return "" end
+  local note = number % 12
+  local note_names = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
+  local note_names_flat = { "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B" }
+  local note_name = flat and note_names_flat[note + 1] or note_names[note + 1]
+  local octave = math.floor( number / 12 ) + (offset or 0)
+  local note_id = idx and string.format( "%03d-", number) or ""
+  return note_id .. note_name .. octave
+end
+
+
 -- Get MIDI Note name from a MIDI row.
 --[[
 number: integer, MIDI row, between 0 and 127

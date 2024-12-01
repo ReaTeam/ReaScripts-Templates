@@ -12,12 +12,9 @@
   + Initial Release
 --]]
 
--- Note: Link your keys to No-op (no action) in action list
--- Note: Be very strict about focus (is arrange view in focus, is mouse over item etc) else the action might trigger at unexpected moment (like writing track name) 
-
 -- USER CONFIG AREA --
 action_id = 40725 -- Grid: Toggle measure grid
-VirtualKeyCode = 0x1B -- G -- https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+VirtualKeyCode = 0x47 -- G -- https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
 
 ----------------------
 
@@ -40,13 +37,13 @@ function main()
 
   if state:byte(VirtualKeyCode) ~= 0 then
     if toggle_state == 0 then
-      reaper.ShowConsoleMsg("Key is pressed" .. "\n")
+      reaper.ShowConsoleMsg("G key is pressed" .. "\n")
       reaper.Main_OnCommand( action_id, 0 ) -- Toggle grid
       toggle_state = 1
     end
   else
     if toggle_state == 1 then
-      reaper.ShowConsoleMsg("Key is released" .. "\n")
+      reaper.ShowConsoleMsg("G key is released" .. "\n")
       reaper.Main_OnCommand( action_id, 0 ) -- Toggle grid
       toggle_state = 0
     end

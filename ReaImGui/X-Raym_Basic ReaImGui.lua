@@ -2,7 +2,6 @@ input_title = "XR - Title"
 
 reaimgui_force_version = "0.10.0.5"
 
--- Dependency
 imgui_path = reaper.ImGui_GetBuiltinPath and ( reaper.ImGui_GetBuiltinPath() .. '/imgui.lua' )
 
 if not imgui_path then
@@ -12,7 +11,6 @@ end
 
 local ImGui = dofile(imgui_path) (reaimgui_force_version)
 
--- Set ToolBar Button State
 function SetButtonState( set )
   local is_new_value, filename, sec, cmd, mode, resolution, val = reaper.get_action_context()
   reaper.SetToggleCommandState( sec, cmd, set or 0 )
@@ -23,17 +21,9 @@ function Exit()
   SetButtonState()
 end
 
-----------------------------------------------------------------------
--- OTHER --
-----------------------------------------------------------------------
 
-----------------------------------------------------------------------
--- RUN --
-----------------------------------------------------------------------
 function Main()
-  --------------------
-  -- YOUR CODE HERE --
-  --------------------
+
 end
 
 function Run()
@@ -50,22 +40,15 @@ function Run()
     imgui_width, imgui_height = ImGui.GetWindowSize( ctx )
 
     Main()
-    
-    --------------------
 
     ImGui.End(ctx)
   end
 
-  if imgui_open and not ImGui.IsKeyPressed(ctx, ImGui.Key_Escape) and not process then
+  if imgui_open and not ImGui.IsKeyPressed(ctx, ImGui.Key_Escape) then
     reaper.defer(Run)
   end
 
 end -- END DEFER
-
-
-----------------------------------------------------------------------
--- RUN --
-----------------------------------------------------------------------
 
 function Init()
   SetButtonState( 1 )

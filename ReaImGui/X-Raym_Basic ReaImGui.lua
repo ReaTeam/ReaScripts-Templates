@@ -1,14 +1,16 @@
 input_title = "XR - Title"
 
-if not reaper.ImGui_CreateContext then
+reaimgui_force_version = "0.10.0.5"
+
+-- Dependency
+imgui_path = reaper.ImGui_GetBuiltinPath and ( reaper.ImGui_GetBuiltinPath() .. '/imgui.lua' )
+
+if not imgui_path then
   reaper.MB("Missing dependency: ReaImGui extension.\nDownload it via Reapack ReaTeam extension repository.", "Error", 0)
   return false
 end
 
-reaimgui_shim_file_path = reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua'
-if reaper.file_exists( reaimgui_shim_file_path ) then
-  dofile( reaimgui_shim_file_path )('0.8.6')
-end
+local ImGui = dofile(imgui_path) (reaimgui_force_version)
 
 -- Set ToolBar Button State
 function SetButtonState( set )
@@ -37,24 +39,24 @@ end
 function Run()
 
   if set_dock_id then
-    reaper.ImGui_SetNextWindowDockID(ctx, set_dock_id)
+    ImGui.SetNextWindowDockID(ctx, set_dock_id)
     set_dock_id = nil
   end
 
-  local imgui_visible, imgui_open = reaper.ImGui_Begin(ctx, input_title, true, reaper.ImGui_WindowFlags_NoCollapse())
+  local imgui_visible, imgui_open = ImGui.Begin(ctx, input_title, true, ImGui.WindowFlags_NoCollapse)
 
   if imgui_visible then
 
-    imgui_width, imgui_height = reaper.ImGui_GetWindowSize( ctx )
+    imgui_width, imgui_height = ImGui.GetWindowSize( ctx )
 
     Main()
     
     --------------------
 
-    reaper.ImGui_End(ctx)
+    ImGui.End(ctx)
   end
 
-  if imgui_open and not reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) and not process then
+  if imgui_open and not ImGui.IsKeyPressed(ctx, ImGui.Key_Escape) and not process then
     reaper.defer(Run)
   end
 
@@ -69,7 +71,7 @@ function Init()
   SetButtonState( 1 )
   reaper.atexit( Exit )
 
-  ctx = reaper.ImGui_CreateContext(input_title)
+  ctx = ImGui.CreateContext(input_title)
 
   reaper.defer(Run)
 end

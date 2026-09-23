@@ -2,7 +2,7 @@
  * ReaScript Name: Background Script
  * About: A template script for running in background REAPER ReaScript, with toolbar button ON/OFF state.
  * Author: X-Raym
- * Author URI: http://extremraym.com
+ * Author URI: https://www.extremraym.com
  * Repository: GitHub > X-Raym > EEL Scripts for Cockos REAPER
  * Repository URI: https://github.com/X-Raym/REAPER-ReaScripts
  * Licence: GPL v3

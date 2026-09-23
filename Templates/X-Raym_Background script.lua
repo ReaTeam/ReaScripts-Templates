@@ -25,6 +25,10 @@ function SetButtonState( set )
   reaper.RefreshToolbar2( sec, cmd )
 end
 
+function Exit()
+  SetButtonState()
+end
+
 
 -- Main Function (which loop in background)
 function Main()
@@ -38,4 +42,4 @@ end
 -- RUN
 SetButtonState( 1 )
 Main()
-reaper.atexit( SetButtonState )
+reaper.atexit( Exit )
